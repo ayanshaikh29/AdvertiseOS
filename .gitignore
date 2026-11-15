@@ -1,0 +1,27 @@
+# Deps / build
+node_modules/
+.next/
+out/
+dist/
+tsconfig.tsbuildinfo
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Env (never commit real keys)
+.env
+.env*.local
+
+# Local file-backed DB (dev only; Supabase in production)
+data/
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+*.pem
+.vscode/*
+!.vscode/extensions.json

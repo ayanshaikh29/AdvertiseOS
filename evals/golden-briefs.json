@@ -1,0 +1,44 @@
+{
+  "briefs": [
+    {
+      "id": "nashik_real_estate",
+      "name": "Nashik Residential Apartments",
+      "city": "Nashik",
+      "industry": "real_estate",
+      "location": "Pathardi Phata, Nashik",
+      "price_range": "₹45–85 Lakhs",
+      "budget": 25000,
+      "instruction": "Pathardi Phata, Nashik me hamare residential 2 & 3 BHK apartments ke liye 30-day Instagram campaign plan banao. Starting price 45 Lakhs, budget 25000/month."
+    },
+    {
+      "id": "restaurant_opening",
+      "name": "Spice Route Bistro Opening",
+      "city": "Pune",
+      "industry": "restaurant",
+      "location": "Koregaon Park, Pune",
+      "price_range": "₹800 for two",
+      "budget": 20000,
+      "instruction": "Koregaon Park, Pune me hamare new Mediterranean & North Indian restaurant opening ke liye Instagram campaign banao with 12 posts & 4 reels. Budget 20000."
+    },
+    {
+      "id": "coaching_institute",
+      "name": "Apex IIT-JEE Academy",
+      "city": "Kota",
+      "industry": "education",
+      "location": "Vigyan Nagar, Kota",
+      "price_range": "₹1,20,000/year",
+      "budget": 50000,
+      "instruction": "Kota me hamare IIT-JEE & NEET coaching institute ke new batch admissions ke liye 30-day strategy banao. Location Vigyan Nagar, Kota, fees 1.2 Lakhs."
+    },
+    {
+      "id": "digital_agency",
+      "name": "AdvertiseOS Agency Acquisition",
+      "city": "Mumbai",
+      "industry": "agency",
+      "location": "BKC, Mumbai",
+      "price_range": "Retainers from ₹35,000/month",
+      "budget": 35000,
+      "instruction": "BKC, Mumbai me hamari apni AI digital marketing agency AdvertiseOS ke client acquisition ke liye 30-day multi-channel campaign plan banao. Retainers from 35,000/month, budget 35000."
+    }
+  ]
+}
