@@ -9,7 +9,7 @@
 1. **Never commit `.env` or `.env*.local`**:
    - `.gitignore` explicitly blocks all `.env` files except `.env.example`.
    - Never stage, commit, or create zip archives containing `.env` or `.env.local`.
-   - Run `npm run check:secrets` before pushing to ensure no private keys (`AIza...`, `AQ...`, or `-----BEGIN PRIVATE KEY-----`) exist in tracked files.
+   - Run `npm run check:secrets` before pushing to ensure no private keys (`AIza...`, `AQ...`, or standard private key PEM blocks) exist in tracked files.
 
 2. **Serverless Production Storage**:
    - Vercel and similar serverless platforms operate with an ephemeral, read-only filesystem.
