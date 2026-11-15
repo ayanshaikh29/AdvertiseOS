@@ -84,11 +84,13 @@ export function AgencyChatWorkspace() {
       .then((d) => {
         const bList = d.brands || [];
         setBrands(bList);
-        const savedBrand = localStorage.getItem("advos-brand") || bList[0]?.id || "";
+        const savedBrand = localStorage.getItem("advos-brand") || bList[0]?.id || "sample-brand";
         setActiveBrand(savedBrand);
         loadConversations(savedBrand);
       })
-      .catch(() => {});
+      .catch(() => {
+        setActiveBrand("sample-brand");
+      });
 
     const handleBrandSwitched = (e: Event) => {
       const brandId = (e as CustomEvent<{ brandId?: string }>).detail?.brandId;
@@ -195,13 +197,14 @@ export function AgencyChatWorkspace() {
     abortRef.current = controller;
 
     try {
+      const targetBrandId = activeBrand || brands[0]?.id || "sample-brand";
       const res = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversationId: activeConversationId,
           instruction: text,
-          brandId: activeBrand,
+          brandId: targetBrandId,
           attachments,
           campaignId: campaignId || undefined,
         }),
@@ -464,7 +467,7 @@ export function AgencyChatWorkspace() {
             onSendMessage={handleSendMessage}
             onStop={handleStop}
             isLoading={isLoading}
-            disabled={!activeBrand && brands.length === 0}
+            disabled={false}
           />
         </div>
       </div>

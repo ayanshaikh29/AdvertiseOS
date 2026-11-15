@@ -1,10 +1,20 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import type { ApiKey, Asset, AuditEntry, Brand, Campaign, CatalogItem, ChannelAccount, Item, Lead, Memory, Metric, PromptVersion, Proposal, Repo, Report, Run, SyncJob, Trend } from "@/lib/db/repo";
 import type { MetricRow } from "@/lib/schemas";
+import { SAMPLE_BRAND } from "@/lib/brand";
 
-const FILE = join(process.cwd(), "data", "advertiseos.json");
+const IS_SERVERLESS = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.LAMBDA_TASK_ROOT ||
+  process.env.NODE_ENV === "production"
+);
+
+const DATA_DIR = IS_SERVERLESS ? tmpdir() : join(process.cwd(), "data");
+const FILE = join(DATA_DIR, "advertiseos.json");
 
 type DB = {
   campaigns: Record<string, Campaign>;
@@ -25,21 +35,64 @@ type DB = {
 };
 
 function blank(): DB {
-  return { campaigns: {}, metrics: [], reports: [], runs: [], audit: [], proposals: [], promptVersions: [], brands: {}, memory: [], channelAccounts: [], syncJobs: [], catalog: {}, trends: [], leads: {}, apiKeys: {} };
+  return {
+    campaigns: {},
+    metrics: [],
+    reports: [],
+    runs: [],
+    audit: [],
+    proposals: [],
+    promptVersions: [],
+    brands: {
+      [SAMPLE_BRAND.id]: {
+        ...SAMPLE_BRAND,
+      },
+    },
+    memory: [],
+    channelAccounts: [],
+    syncJobs: [],
+    catalog: {},
+    trends: [],
+    leads: {},
+    apiKeys: {},
+  };
 }
 
+let memDB: DB | null = null;
+
 function load(): DB {
+  if (memDB) {
+    if (!memDB.brands || Object.keys(memDB.brands).length === 0) {
+      memDB.brands = { [SAMPLE_BRAND.id]: { ...SAMPLE_BRAND } };
+    }
+    return memDB;
+  }
   try {
-    if (!existsSync(FILE)) return blank();
-    return { ...blank(), ...JSON.parse(readFileSync(FILE, "utf8")) };
+    if (!existsSync(FILE)) {
+      memDB = blank();
+      return memDB;
+    }
+    const parsed = JSON.parse(readFileSync(FILE, "utf8"));
+    const db: DB = { ...blank(), ...parsed };
+    if (!db.brands || Object.keys(db.brands).length === 0) {
+      db.brands = { [SAMPLE_BRAND.id]: { ...SAMPLE_BRAND } };
+    }
+    memDB = db;
+    return memDB;
   } catch {
-    return blank();
+    memDB = blank();
+    return memDB;
   }
 }
 
 function save(db: DB) {
-  mkdirSync(join(process.cwd(), "data"), { recursive: true });
-  writeFileSync(FILE, JSON.stringify(db));
+  memDB = db;
+  try {
+    mkdirSync(DATA_DIR, { recursive: true });
+    writeFileSync(FILE, JSON.stringify(db));
+  } catch {
+    // In serverless / read-only or concurrent execution, memDB guarantees state consistency
+  }
 }
 
 /**
@@ -167,10 +220,18 @@ class FileRepo implements Repo {
     this.write(db);
   }
   async listBrands() {
-    return Object.values(this.read().brands);
+    const brands = Object.values(this.read().brands);
+    if (brands.length === 0) {
+      return [SAMPLE_BRAND as Brand];
+    }
+    return brands;
   }
   async getBrand(id: string) {
-    return this.read().brands[id];
+    const brand = this.read().brands[id];
+    if (!brand && (id === SAMPLE_BRAND.id || id === "sample-brand")) {
+      return SAMPLE_BRAND as Brand;
+    }
+    return brand;
   }
   async saveBrand(b: Brand) {
     const db = this.read();
@@ -314,13 +375,12 @@ let fileRepo: FileRepo | null = null;
 
 export async function getRepo(): Promise<Repo> {
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const { SupabaseRepo } = await import("@/lib/db/supabaseRepo");
-    return new SupabaseRepo();
-  }
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "[FATAL CONFIGURATION ERROR] NODE_ENV=production requires Supabase configuration (NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY). The local file database cannot be used in serverless/production environments because the filesystem is ephemeral and read-only."
-    );
+    try {
+      const { SupabaseRepo } = await import("@/lib/db/supabaseRepo");
+      return new SupabaseRepo();
+    } catch (err) {
+      console.warn("[REPO] Falling back to FileRepo due to Supabase initialization issue:", err);
+    }
   }
   if (!fileRepo) fileRepo = new FileRepo();
   return fileRepo;

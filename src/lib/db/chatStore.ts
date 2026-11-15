@@ -1,8 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import type { Conversation, ChatMessage, ActiveTask } from "@/types/chat";
 
-const DATA_DIR = join(process.cwd(), "data");
+const IS_SERVERLESS = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.LAMBDA_TASK_ROOT ||
+  process.env.NODE_ENV === "production"
+);
+
+const DATA_DIR = IS_SERVERLESS ? tmpdir() : join(process.cwd(), "data");
 const FILE = join(DATA_DIR, "chats.json");
 
 interface ChatDB {

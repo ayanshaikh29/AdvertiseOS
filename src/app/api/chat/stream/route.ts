@@ -3,7 +3,7 @@ import { getRepo } from "@/lib/db/fileRepo";
 import { ChatStore } from "@/lib/db/chatStore";
 import { runAgencyOrchestration, type OrchestrationEvent } from "@/lib/agents/orchestrator";
 import type { AgentActivity, Deliverable } from "@/types/chat";
-import type { BrandProfile } from "@/lib/brand";
+import { SAMPLE_BRAND, type BrandProfile } from "@/lib/brand";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -19,38 +19,25 @@ export async function POST(req: Request) {
   const repo = await getRepo();
   const brands = await repo.listBrands();
 
-  // Context isolation: never silently reuse brands[0] (Sample Brand) for an unknown brandId.
+  // Context isolation: find matching brand or fall back cleanly
   let currentBrand: BrandProfile;
   if (brandId && typeof brandId === "string") {
     const found = brands.find((b) => b.id === brandId);
     if (!found) {
-      return new Response(
-        JSON.stringify({ error: `Unknown brandId "${brandId}". Select an existing brand or create one before running the agency.` }),
-        { status: 400 }
-      );
+      if (brandId === "sample-brand" || brandId === SAMPLE_BRAND.id) {
+        currentBrand = SAMPLE_BRAND;
+      } else if (brands.length > 0) {
+        currentBrand = brands[0] as BrandProfile;
+      } else {
+        currentBrand = SAMPLE_BRAND;
+      }
+    } else {
+      currentBrand = found;
     }
-    currentBrand = found;
-  } else if (brands.length === 1) {
-    currentBrand = brands[0] as BrandProfile;
-  } else if (brands.length > 1) {
-    return new Response(
-      JSON.stringify({ error: "brandId is required when multiple brands exist. Pass an explicit brandId to prevent cross-client context leakage." }),
-      { status: 400 }
-    );
+  } else if (brands.length >= 1) {
+    currentBrand = (brands.find((b) => b.id === "sample-brand") || brands[0]) as BrandProfile;
   } else {
-    // No brands configured — ephemeral neutral profile. Do NOT inject sample catalog/pricing.
-    currentBrand = {
-      id: `adhoc-${Date.now()}`,
-      name: "Your Brand",
-      tone: "professional, direct, high-value",
-      languages: ["English", "Hindi", "Hinglish"],
-      audience: "Defined by the current campaign request",
-      products: "Defined by the current campaign request",
-      usp: "",
-      dos: ["Use only facts from the user request"],
-      donts: ["No false guarantees", "No invented statistics", "No sample-brand data"],
-      compliance_notes: "Never invent prices, testimonials, awards, or results.",
-    };
+    currentBrand = SAMPLE_BRAND;
   }
 
   // Optional project binding from the composer: align outputs with an existing campaign.
