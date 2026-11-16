@@ -220,42 +220,42 @@ const PROFILES: Record<IndustryKey, IndustryProfile> = {
   },
   services: {
     key: "services",
-    label: "Local Services",
+    label: "Local Services & Wellness",
     audienceDefaults: [
-      "Local customers aged 25-50 searching for reliable service providers",
-      "Busy professionals who value convenience and trust",
-      "Repeat clients referring friends and family",
+      "Local customers and working professionals looking for verified experts and results",
+      "Individuals seeking trusted guidance, transparent pricing, and structured programs",
+      "Busy clients who prioritize convenience, cleanliness, and accountability",
     ],
     contentPillars: [
-      "Expertise & Education",
-      "Process & Transparency",
-      "Customer Outcomes (verified only)",
-      "Offers & Booking CTAs",
+      "Expert Guidance & Transformation",
+      "Facility, Atmosphere & Equipment",
+      "Client Results & Case Studies",
+      "Special Programs, Passes & Booking CTAs",
     ],
     objectiveDefaults: [
-      "Increase enquiries and bookings",
-      "Build trust through educational content",
-      "Improve local search and social discovery",
+      "Generate qualified inquiries and trial bookings",
+      "Build trust through educational breakdowns and transparent programs",
+      "Increase footfall and program confirmations",
     ],
     hashtagSeed: [
-      "#LocalBusiness",
-      "#ServiceExcellence",
-      "#BookNow",
-      "#TrustedService",
-      "#CustomerFirst",
-      "#QualityWork",
-      "#GetQuotes",
+      "#FitnessGoals",
+      "#Transformation",
+      "#HealthAndWellness",
       "#LocalExperts",
+      "#GymLife",
+      "#GetFit",
+      "#Community",
+      "#BookNow",
     ],
     reelTopics: (name) => [
-      `${name} — Service Process in 30 Seconds`,
-      `Before / After (Verified Work Only)`,
-      `FAQ: What Customers Ask Most`,
-      `Meet the Team Behind the Service`,
+      `${name} — 30-Second Program & Facility Walkthrough`,
+      `Top 3 Mistakes Beginners Make (And How to Fix Them)`,
+      `Client Transformation / Real Results Breakdown`,
+      `Behind the Scenes: A Day with Our Team`,
     ],
-    contaminationTerms: ["homebuyer", "site visit", "RERA", "apartment", "real estate", "2BHK"],
+    contaminationTerms: ["homebuyer", "site visit", "RERA", "apartment", "real estate", "2BHK", "carpet area"],
     requiresPriceRange: false,
-    requiresLocation: false,
+    requiresLocation: true,
   },
   agency: {
     key: "agency",
@@ -329,31 +329,55 @@ const ECOMMERCE_RE =
 const AGENCY_RE =
   /\b(marketing agency|digital marketing|seo agency|performance marketing|ad agency|client retainers)\b/i;
 const SERVICES_RE =
-  /\b(salon|clinic|gym|plumber|electrician|ca repair|coaching|tutoring|services near|local service)\b/i;
+  /\b(salon|clinic|gym|fitness|workout|crossfit|training|trainer|trainers|nutrition|physio|physiotherapy|dentist|dental|spa|wellness|plumber|electrician|ca repair|coaching|tutoring|services near|local service)\b/i;
 
 export function detectIndustry(
   texts: Array<string | undefined | null>,
   brand?: Pick<BrandProfile, "products" | "audience" | "name" | "usp">,
   intent?: Pick<RequestIntent, "industry" | "topic">
 ): IndustryProfile {
+  // 1. Check user input texts directly, most recent first (never let history contaminate fresh briefs)
+  const userTexts = texts.filter(Boolean).map(String);
+  for (let i = userTexts.length - 1; i >= 0; i--) {
+    const raw = userTexts[i];
+    if (!raw) continue;
+    const text = raw.toLowerCase();
+    if (REAL_ESTATE_RE.test(text) && !CLOTHING_RE.test(text)) return PROFILES.real_estate;
+    if (RESTAURANT_RE.test(text)) return PROFILES.restaurant;
+    if (SERVICES_RE.test(text)) return PROFILES.services;
+    if (CLOTHING_RE.test(text)) return PROFILES.clothing;
+    if (ECOMMERCE_RE.test(text)) return PROFILES.ecommerce;
+    if (AGENCY_RE.test(text)) return PROFILES.agency;
+  }
+
+  // 2. Check explicit request intent
+  if (intent?.industry) {
+    const ind = intent.industry.toLowerCase();
+    if (REAL_ESTATE_RE.test(ind) && !CLOTHING_RE.test(ind)) return PROFILES.real_estate;
+    if (RESTAURANT_RE.test(ind)) return PROFILES.restaurant;
+    if (SERVICES_RE.test(ind)) return PROFILES.services;
+    if (CLOTHING_RE.test(ind)) return PROFILES.clothing;
+    if (ECOMMERCE_RE.test(ind)) return PROFILES.ecommerce;
+    if (AGENCY_RE.test(ind)) return PROFILES.agency;
+  }
+
+  // 3. Fallback to brand profile haystack
   const haystack = [
-    ...texts.filter(Boolean).map(String),
     brand?.products ?? "",
     brand?.audience ?? "",
     brand?.name ?? "",
     brand?.usp ?? "",
-    intent?.industry ?? "",
     intent?.topic ?? "",
   ]
     .join(" \n ")
     .toLowerCase();
 
   if (REAL_ESTATE_RE.test(haystack) && !CLOTHING_RE.test(haystack)) return PROFILES.real_estate;
-  if (CLOTHING_RE.test(haystack)) return PROFILES.clothing;
   if (RESTAURANT_RE.test(haystack)) return PROFILES.restaurant;
+  if (SERVICES_RE.test(haystack)) return PROFILES.services;
+  if (CLOTHING_RE.test(haystack)) return PROFILES.clothing;
   if (ECOMMERCE_RE.test(haystack)) return PROFILES.ecommerce;
   if (AGENCY_RE.test(haystack)) return PROFILES.agency;
-  if (SERVICES_RE.test(haystack)) return PROFILES.services;
   return PROFILES.other;
 }
 

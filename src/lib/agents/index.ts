@@ -416,8 +416,12 @@ Strictly avoid buzzwords (no "elevate", "unlock", "game-changer"), invented disc
         ],
         audience: audienceLine,
         hashtags: [
-          ...(brand.products.toLowerCase().includes("cloth") || brand.products.toLowerCase().includes("fashion")
+          ...(brand.products.toLowerCase().includes("fit") || brand.products.toLowerCase().includes("gym") || brand.products.toLowerCase().includes("wellness")
+            ? ["#FitnessGoals", "#Transformation", "#GymLife", "#HealthIndia"]
+            : brand.products.toLowerCase().includes("cloth") || brand.products.toLowerCase().includes("fashion")
             ? ["#MensFashion", "#OOTD", "#StyleTips", "#FashionIndia"]
+            : brand.products.toLowerCase().includes("food") || brand.products.toLowerCase().includes("cafe") || brand.products.toLowerCase().includes("chai")
+            ? ["#Foodie", "#CafeLife", "#GoodEats", "#PuneFoodie"]
             : ["#Business", "#Growth", "#Quality", "#Trusted"]),
           `#${brand.name.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20) || "Brand"}`,
           "#Explore",

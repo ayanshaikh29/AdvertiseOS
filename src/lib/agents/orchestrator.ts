@@ -231,10 +231,19 @@ export async function runAgencyOrchestration({
       /^(hello|hi|hey|kya haal|namaste|good\s*(morning|afternoon|evening))\b/i.test(instruction.trim()) &&
       Object.keys(extractFacts(instruction).facts).length === 0;
 
+    const isNewBrief =
+      /\b(create\s+a\s+(?:\d+-day\s+)?campaign|new\s+campaign|plan\s+(?:banao|karo|for)|strategy\s+for|campaign\s+for|marketing\s+(?:plan|strategy|campaign)|hamare\s+.*?(?:ke\s+liye)|client\s+brief|we\s+run)\b/i.test(instruction) ||
+      (/\b\d+\s*(?:posts?|reels?|carousels?|design\s*briefs?)\b/i.test(instruction) && /\b(?:budget|₹|rs\.?|inr)\s*[\d,.]+/i.test(instruction));
+
     let activeTask: ActiveTask;
     let isContinuation = false;
 
-    if (existingTask && (existingTask.status === "COLLECTING_FACTS" || existingTask.status === "TASK_CREATED") && !isGreetingOnly) {
+    if (
+      existingTask &&
+      (existingTask.status === "COLLECTING_FACTS" || existingTask.status === "TASK_CREATED") &&
+      !isGreetingOnly &&
+      !isNewBrief
+    ) {
       isContinuation = true;
       notifyAgent("manager", "AI Agency Manager", "👔", "in_progress", "Integrating client details into active task...", undefined, undefined, undefined, "Task Continuity Active", existingTask.id);
       activeTask = updateTaskWithUserInput(existingTask, instruction);
@@ -284,7 +293,7 @@ export async function runAgencyOrchestration({
     }
 
     const industry: IndustryProfile = detectIndustry(
-      [activeTask.originalRequest, instruction],
+      [instruction],
       brand,
       activeTask.intent
     );
@@ -479,16 +488,40 @@ export async function runAgencyOrchestration({
       "";
     const projectName = extractedName || brand.name.replace(/\s*\(Sample data\)\s*$/i, "").trim() || "Campaign";
     const locationValue = activeTask.collectedFacts.location?.value;
+
+    const effectiveBrand: BrandProfile = {
+      ...brand,
+      name: projectName,
+      products:
+        activeTask.collectedFacts.products?.value ||
+        activeTask.collectedFacts.campaign_offer?.value ||
+        (industry.key === "services"
+          ? "Fitness & wellness programs, certified training, and nutrition plans"
+          : industry.key === "restaurant"
+          ? "Special dining menu, beverages, and takeout"
+          : industry.key === "clothing"
+          ? "Men & women fashion apparel and footwear"
+          : brand.products),
+      audience:
+        activeTask.collectedFacts.target_audience?.value ||
+        industry.audienceDefaults[0] ||
+        brand.audience,
+    };
+
     const overviewDeliverable: DeliverableOverview = {
       kind: "overview",
-      brandName: brand.name,
+      brandName: projectName,
       projectName,
       location: locationValue || (industry.requiresLocation ? "Location pending" : "N/A (not required for this vertical)"),
       priceRange: activeTask.collectedFacts.price_range?.value || (industry.requiresPriceRange ? "Price range pending" : "Not applicable"),
       budget: budget ? `₹${budget.toLocaleString("en-IN")}/month` : "Not stated by client",
       isDemoMode: activeTask.isDemoMode,
-      objectives: industry.objectiveDefaults,
-      targetAudience: industry.audienceDefaults,
+      objectives: activeTask.collectedFacts.objective?.value
+        ? [activeTask.collectedFacts.objective.value, ...industry.objectiveDefaults.slice(0, 2)]
+        : industry.objectiveDefaults,
+      targetAudience: activeTask.collectedFacts.target_audience?.value
+        ? [activeTask.collectedFacts.target_audience.value, ...industry.audienceDefaults.slice(0, 2)]
+        : industry.audienceDefaults,
       deliverablesSummary: {
         postsCount: requiredPosts,
         reelsCount: requiredReels,
@@ -571,11 +604,11 @@ export async function runAgencyOrchestration({
           notifyAgent("researcher", "Market Researcher", "🔍", "in_progress", "Benchmarking competitors & audience personas", undefined, undefined, undefined, undefined, activeTask.id, "Auditing competitors & personas");
           const tStart = Date.now();
           try {
-            const res = track(await withTimeout(researcherRun(brand, fullContextPrompt, activeTask.originalRequest), STAGE_TIMEOUT_MS, "researcher"));
+            const res = track(await withTimeout(researcherRun(effectiveBrand, fullContextPrompt, activeTask.originalRequest), STAGE_TIMEOUT_MS, "researcher"));
             const rData = res.data;
             researchDeliverable = {
               kind: "research",
-              brandName: brand.name,
+              brandName: effectiveBrand.name,
               industry: rData.industry || industry.label,
               researchDate: rData.research_date || new Date().toISOString().slice(0, 10),
               competitors: (rData.competitors || []).map((c) => ({
@@ -630,12 +663,12 @@ export async function runAgencyOrchestration({
           notifyAgent("brand_voice", "Brand Voice Agent", "🎙️", "in_progress", "Synthesizing tone guidelines & compliance guardrails", undefined, undefined, undefined, undefined, activeTask.id, "Tone guidelines & rules");
           const tStart = Date.now();
           try {
-            const res = track(await withTimeout(brandVoiceRun(brand, fullContextPrompt), STAGE_TIMEOUT_MS, "brand_voice"));
+            const res = track(await withTimeout(brandVoiceRun(effectiveBrand, fullContextPrompt), STAGE_TIMEOUT_MS, "brand_voice"));
             const bv = res.data;
             brandVoiceDeliverable = {
               kind: "brand_voice",
-              brandName: brand.name,
-              toneDescriptors: bv.tone_descriptors || [brand.tone || "Professional", "Direct", "Transparent"],
+              brandName: effectiveBrand.name,
+              toneDescriptors: bv.tone_descriptors || [effectiveBrand.tone || "Professional", "Direct", "Transparent"],
               coreMessagingPillars: bv.core_messaging_pillars || industry.contentPillars.slice(0, 3),
               vocabularyDos: bv.vocabulary_dos || ["Clear CTA", "Honest claims", "Customer-first"],
               vocabularyDonts: bv.vocabulary_donts || ["Fake awards", "Invented stats", "Guarantees"],
@@ -692,9 +725,9 @@ export async function runAgencyOrchestration({
     notifyAgent("strategist", "AI Strategist", "🎯", "in_progress", "Architecting campaign positioning, plan & calendar", undefined, undefined, undefined, undefined, activeTask.id, "Full campaign context & brief");
     const tStrat = Date.now();
     const planFallback = ceoPlanFallbackSafe(activeTask.originalRequest);
-    const strategyFallback = strategistFallbackSafe(brand, industry, platforms);
+    const strategyFallback = strategistFallbackSafe(effectiveBrand, industry, platforms);
     const [planRes, strategyRes] = await Promise.all([
-      withTimeout(ceoPlan(brand, fullContextPrompt), CRITICAL_TIMEOUT_MS, "ceoPlan")
+      withTimeout(ceoPlan(effectiveBrand, fullContextPrompt), CRITICAL_TIMEOUT_MS, "ceoPlan")
         .then(track)
         .catch((e) => {
           failedAgentStages.push("ceoPlan");
@@ -713,7 +746,7 @@ export async function runAgencyOrchestration({
             },
           };
         }),
-      withTimeout(strategistRun(brand, fullContextPrompt, month), CRITICAL_TIMEOUT_MS, "strategist")
+      withTimeout(strategistRun(effectiveBrand, fullContextPrompt, month), CRITICAL_TIMEOUT_MS, "strategist")
         .then(track)
         .catch((e) => {
           failedAgentStages.push("strategist");
@@ -948,9 +981,9 @@ export async function runAgencyOrchestration({
               try {
                 const res = track(
                   await withTimeout(
-                    contentRun(brand, fullContextPrompt, item.topic, item.platform, item.format, {
-                      audience: industry.audienceDefaults[idx % industry.audienceDefaults.length],
-                      products: brand.products,
+                    contentRun(effectiveBrand, fullContextPrompt, item.topic, item.platform, item.format, {
+                      audience: effectiveBrand.audience,
+                      products: effectiveBrand.products,
                       variantIndex: idx,
                     }),
                     STAGE_TIMEOUT_MS,
@@ -965,7 +998,7 @@ export async function runAgencyOrchestration({
                   const retry = track(
                     await withTimeout(
                       contentRun(
-                        brand,
+                        effectiveBrand,
                         `${fullContextPrompt}\n\nUNIQUENESS REQUIREMENT: Do not reuse hooks or captions already used. Existing:\n${existingContent
                           .map((e) => `- ${e.hook}`)
                           .join("\n")}`,
@@ -973,8 +1006,8 @@ export async function runAgencyOrchestration({
                         item.platform,
                         item.format,
                         {
-                          audience: industry.audienceDefaults[idx % industry.audienceDefaults.length],
-                          products: brand.products,
+                          audience: effectiveBrand.audience,
+                          products: effectiveBrand.products,
                           variantIndex: idx + 1,
                         }
                       ),
@@ -1006,7 +1039,7 @@ export async function runAgencyOrchestration({
               try {
                 return track(
                   await withTimeout(
-                    designerRun(brand, fullContextPrompt, item.topic, item.platform, item.format),
+                    designerRun(effectiveBrand, fullContextPrompt, item.topic, item.platform, item.format),
                     STAGE_TIMEOUT_MS,
                     `design:${idx}`
                   )
@@ -1022,14 +1055,14 @@ export async function runAgencyOrchestration({
               const item = visualSource[idx];
               if (!d || !d.data || !item) continue;
               const headline = d.data.headline || item.topic.slice(0, 80);
-              const subtext = d.data.subtext || `By ${brand.name}`;
+              const subtext = d.data.subtext || `By ${effectiveBrand.name}`;
               const templateId = d.data.template_id || "bold-center";
               const size = d.data.size || "1080x1080";
 
               let rendered;
               try {
                 rendered = await renderCreative(
-                  { headline, subtext, template_id: templateId, size, brandName: brand.name },
+                  { headline, subtext, template_id: templateId, size, brandName: effectiveBrand.name },
                   d.data.image_prompt
                 );
               } catch {
@@ -1094,9 +1127,9 @@ export async function runAgencyOrchestration({
               try {
                 return track(
                   await withTimeout(
-                    videoRun(brand, fullContextPrompt, t, 30, {
+                    videoRun(effectiveBrand, fullContextPrompt, t, 30, {
                       industry: industry.label,
-                      audience: industry.audienceDefaults[idx % industry.audienceDefaults.length],
+                      audience: effectiveBrand.audience,
                       variantIndex: idx,
                     }),
                     STAGE_TIMEOUT_MS,
@@ -1166,7 +1199,7 @@ export async function runAgencyOrchestration({
           try {
             const seoRes = track(
               await withTimeout(
-                seoRun(brand, fullContextPrompt, `${projectName} ${industry.label} search strategy`),
+                seoRun(effectiveBrand, fullContextPrompt, `${projectName} ${industry.label} search strategy`),
                 STAGE_TIMEOUT_MS,
                 "seo"
               )
@@ -1174,7 +1207,7 @@ export async function runAgencyOrchestration({
             const sData = seoRes.data;
             const seoDeliverable: DeliverableSeo = {
               kind: "seo",
-              brandName: brand.name,
+              brandName: effectiveBrand.name,
               targetFocus: sData.target_focus || `${projectName} — ${industry.label} search discovery`,
               keywordClusters: (sData.keyword_clusters || []).map((c) => ({
                 topic: c.topic,
@@ -1196,7 +1229,7 @@ export async function runAgencyOrchestration({
               })),
               contentGapOpportunities: sData.content_gap_opportunities || [
                 `Beginner guide for ${industry.label} buyers/customers`,
-                `FAQ cluster around ${brand.products.split(",")[0] || "core offer"}`,
+                `FAQ cluster around ${effectiveBrand.products.split(",")[0] || "core offer"}`,
               ],
             };
             onEvent({ type: "deliverable", deliverable: seoDeliverable });
@@ -1217,13 +1250,13 @@ export async function runAgencyOrchestration({
           const tPerf = Date.now();
           try {
             const perfRes = track(
-              await withTimeout(performanceStrategyRun(brand, fullContextPrompt, budget), STAGE_TIMEOUT_MS, "performance")
+              await withTimeout(performanceStrategyRun(effectiveBrand, fullContextPrompt, budget), STAGE_TIMEOUT_MS, "performance")
             );
             const pData = perfRes.data;
             const metaLike = platforms.filter((p) => ["instagram", "facebook"].includes(p));
             const perfDeliverable: DeliverablePerformance = {
               kind: "performance",
-              brandName: brand.name,
+              brandName: effectiveBrand.name,
               totalBudget: budget ?? undefined,
               campaignStructure: [
                 {
@@ -1466,7 +1499,7 @@ Budget: ${budgetLabel}
 
     try {
       criticRes = track(
-        await withTimeout(criticRun(brand, fullContextPrompt, deliverablePackageText, 1), 30_000, "critic")
+        await withTimeout(criticRun(effectiveBrand, fullContextPrompt, deliverablePackageText, 1), 30_000, "critic")
       );
     } catch {
       failedAgentStages.push("critic");

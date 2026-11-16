@@ -87,6 +87,21 @@ export function extractFacts(
       timestamp: now,
       confidence: 0.8,
     };
+  } else if (!merged.location) {
+    const cityDirect = text.match(/\b(Mumbai(?:\s*\([^)]+\))?|Pune|Nashik|Bangalore|Bengaluru|Delhi|Hyderabad|Chennai|Kolkata|Thane|Navi Mumbai|Noida|Gurgaon|Gurugram|Indore|Surat|Ahmedabad|Jaipur)\b/i);
+    if (cityDirect?.[1]) {
+      const val = cityDirect[1].trim();
+      rawMatches.location = val;
+      merged.location = {
+        field: "location",
+        value: val,
+        source: "user",
+        verificationStatus: defaultStatus,
+        dataClassification: defaultClassification,
+        timestamp: now,
+        confidence: 0.85,
+      };
+    }
   }
 
   // 2. Price Range — same boundary discipline. "price" must connect to an actual
@@ -243,11 +258,16 @@ export function extractFacts(
   }
 
   // 5b. Business / Brand name — the client's actual name, never the demo brand.
-  // Matches: We run "X", our brand is X, brand: X, company: X, client: X, we are X
+  // Matches: We run "X", our brand is X, brand: X, company: X, client: X, we are X, campaign for "X"
   const bizNamePatterns: RegExp[] = [
     /(?:we\s+(?:run|own|operate|are|have)\s+)["“”']([^"“”'\n]{2,60})["“”']/i,
     /(?:we\s+(?:run|own|operate|are)\s+)([A-Z][A-Za-z0-9&'.-]*(?:\s+[A-Z][A-Za-z0-9&'.-]*){0,4})/,
     /(?:business|brand|company|client|project)\s*(?:name)?\s*(?:[:\-]|is|is called|=|hai)\s*["“”']?([^"'“”\n,;]{2,60})/i,
+    /(?:campaign|marketing|strategy|plan|posts?|reels?|leads?|ad|ads)\s+for\s+["“”']([^"“”'\n]{2,60})["“”']/i,
+    /(?:store|shop|gym|cafe|café|clinic|restaurant|brand|agency|business|startup|company)\s+["“”']([^"“”'\n]{2,60})["“”']/i,
+    /["“”']([^"“”'\n]{2,60})["“”']\s+(?:ke\s+liye|for\s+our)/i,
+    /hamare\s+.*?(?:store|gym|cafe|brand|business)?\s*["“”']([^"“”'\n]{2,60})["“”']/i,
+    /(?:for|at)\s+["“”']([^"“”'\n]{2,60})["“”']/i,
   ];
   for (const re of bizNamePatterns) {
     const m = text.match(re);
@@ -264,6 +284,26 @@ export function extractFacts(
         confidence: 0.9,
       };
       break;
+    }
+  }
+
+  // Quoted brand fallback: e.g. "IronCore Fitness"
+  if (!merged.business_name) {
+    const quotedMatch = text.match(/["“”']([A-Z][A-Za-z0-9&'.-]+(?:\s+[A-Za-z0-9&'.-]+){0,4})["“”']/);
+    if (quotedMatch?.[1]) {
+      const val = quotedMatch[1].trim();
+      if (val.length >= 2 && val.length <= 60 && !/^(instagram|facebook|meta|google|sample|demo|posts|reels)$/i.test(val)) {
+        rawMatches.business_name = val;
+        merged.business_name = {
+          field: "business_name",
+          value: val,
+          source: "user",
+          verificationStatus: defaultStatus,
+          dataClassification: defaultClassification,
+          timestamp: now,
+          confidence: 0.85,
+        };
+      }
     }
   }
 
@@ -284,12 +324,28 @@ export function extractFacts(
   }
 
   // 7. Target Audience
-  const audExplicit = text.match(/(?:target\s*audience|audience|target\s*buyers?)\s*(?:[:\-]|is|will be|=|hai)?\s*([^\n\r;]+)/i);
+  const audExplicit = text.match(/(?:target\s*(?:audience|buyers?|group)?|audience)\s*(?:[:\-]|is|will be|=|hai)\s*([^\n\r;]+)/i);
   if (audExplicit?.[1]) {
     const val = audExplicit[1].trim().replace(/^[:\-\s]+/, "").replace(/[.]+$/, "");
     rawMatches.target_audience = val;
     merged.target_audience = {
       field: "target_audience",
+      value: val,
+      source: "user",
+      verificationStatus: defaultStatus,
+      dataClassification: defaultClassification,
+      timestamp: now,
+      confidence: 0.95,
+    };
+  }
+
+  // 7b. Campaign Offer / Theme
+  const campExplicit = text.match(/(?:campaign|offer|program|special)\s*(?:[:\-]|is|will be|=|hai)\s*([^\n\r;]+)/i);
+  if (campExplicit?.[1]) {
+    const val = campExplicit[1].trim().replace(/^[:\-\s]+/, "").replace(/[.]+$/, "");
+    rawMatches.campaign_offer = val;
+    merged.campaign_offer = {
+      field: "campaign_offer",
       value: val,
       source: "user",
       verificationStatus: defaultStatus,
@@ -334,11 +390,14 @@ export function extractFacts(
   // pricing, clubhouse amenities or homebuyer audiences from a real-estate template.
   if (isDemo) {
     const haystackLower = `${text} ${merged.amenities_or_features?.value ?? ""} ${merged.products?.value ?? ""}`.toLowerCase();
+    const isFitness = /\b(gym|fitness|workout|crossfit|training|trainer|nutrition|wellness|shred|bodybuilding)\b/.test(haystackLower);
     const isFood = /\b(resto|cafe|café|chai|tea|coffee|bakery|food|menu|dining|kitchen|pizza|burger|snack|bistro|eatery)\b/.test(haystackLower);
     const isClothing = /\b(clothing|clothes|apparel|fashion|shirt|jeans|trouser|footwear|wardrobe|boutique|sneaker|kurta)\b/.test(haystackLower);
     const isEcommerce = /\b(e-?commerce|d2c|online store|shopify|product catalog|unboxing)\b/.test(haystackLower);
 
-    const demoConfig = isFood
+    const demoConfig = isFitness
+      ? { configurations: "Programs: 30-Day Shred Challenge · Personal Training · Group HIIT · Nutrition Counseling", amenities: "Certified trainers · Modern equipment · Free trial pass · Locker & shower facilities", cta: "Claim 2-day free pass · DM 'SHRED' · WhatsApp to schedule assessment", audience: "Working professionals aged 24-45 looking for fitness and weight loss" }
+      : isFood
       ? { configurations: "Menu Tiers: Kadak Chai ₹30 · Bun Maska ₹45 · Vada Pav ₹35 · Brownie Shake ₹99", amenities: "3 outlets in Pune · Monsoon Special Menu · dine-in + delivery (Swiggy/Zomato)", cta: "Order on Swiggy/Zomato · DM 'MENU' · visit nearest outlet", audience: "Pune chai & café lovers aged 18-45, foodies and students" }
       : isClothing
         ? { configurations: "Product range: Shirts, Jeans, Trousers, T-shirts & Footwear (sizes S–XXL)", amenities: "In-store fitting · Exchange policy · New arrivals weekly", cta: "DM 'SIZE' for availability · WhatsApp to book a fitting · visit the store", audience: "Men & women 18-35 shopping for everyday style" }
