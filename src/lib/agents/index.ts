@@ -222,43 +222,123 @@ Requirements:
     schema: performanceStrategySchema,
     system: "You are the Performance Marketing Director. Build scalable Meta & Google ad campaigns with disciplined budget allocation and clear ROAS targets.",
     taskType: "performance:strategy",
-    fallback: () => ({
-      total_budget: budget || null,
-      campaign_structure: [
-        {
-          stage: "Top of Funnel (Awareness)" as const,
-          budget_split_pct: 50,
-          recommended_channels: ["Meta Ads (Instagram & Facebook)", "YouTube Shorts"],
-          audienceTargeting: ["Broad demographic interest", "Competitor audience lookalikes (1-2%)"],
-          audience_targeting: ["Industry Interest Targeting", "Lookalike 1% of Past Enquiries"],
-          ad_formats: ["Short-form Video Reels", "Carousel Value Decks"],
-          primary_kpi: "Cost Per 1,000 Impressions (CPM) & Video Hook Rate (>30%)",
-        },
-        {
-          stage: "Middle of Funnel (Retargeting)" as const,
-          budget_split_pct: 30,
-          recommended_channels: ["Instagram Feed", "Facebook Video Feed"],
-          audience_targeting: ["Website visitors (last 30 days)", "Instagram page engagers (last 60 days)"],
-          ad_formats: ["Client Case Study Carousel", "Overcoming Objections Video"],
-          primary_kpi: "Cost Per Click (CPC) & Click-Through Rate (CTR > 1.8%)",
-        },
-        {
-          stage: "Bottom of Funnel (Conversion)" as const,
-          budget_split_pct: 20,
-          recommended_channels: ["Meta Lead Forms", "Google Search High-Intent Keywords"],
-          audience_targeting: ["Engaged leads who have not booked a consultation"],
-          ad_formats: ["Direct Offer with Limited Consultation Slots", "WhatsApp Click-to-Chat Ad"],
-          primary_kpi: "Cost Per Qualified Lead (CPL) & Conversion Rate",
-        },
-      ],
-      bidding_strategy: "Start with Lowest Cost (Auto-bid) for initial 50 conversions to exit learning phase, then transition to Target CPA / Cost Cap.",
-      ab_test_matrix: [
-        "Hook Test: Problem-led opening vs. Direct benefit opening",
-        "Format Test: 1080x1080 Static graphic vs. 9:16 Vertical Reel walkthrough",
-        "CTA Test: 'Book Free Discovery Call' vs. 'Claim Strategy Audit'",
-      ],
-      execution_note: "Planning blueprint only. No live campaigns will be launched or budget debited without explicit client confirmation.",
-    }),
+    fallback: () => {
+      const isClothing = /cloth|apparel|fashion|shirt|jeans|streetwear|t-shirt|sneaker/i.test(brand.products);
+      const isGym = /gym|fitness|workout|crossfit|trainer|training|nutrition/i.test(brand.products);
+      const isFood = /cafe|chai|restaurant|food|dining|snack/i.test(brand.products);
+
+      const b = budget || 15000;
+      const tofuAmt = Math.round(b * 0.5);
+      const mofuAmt = Math.round(b * 0.3);
+      const bofuAmt = Math.round(b * 0.2);
+
+      const campaignStructure = isClothing
+        ? [
+            {
+              stage: "Top of Funnel (Awareness)" as const,
+              budget_split_pct: 50,
+              recommended_channels: ["Instagram Reels Ads", "Story Lookbooks"],
+              audience_targeting: ["Men aged 18-32 in target city", "Interests: Streetwear, Sneakerhead culture, Casual fashion"],
+              ad_formats: ["High-energy Outfit Transition Reel (3s hook)", "3-Slide Carousel Lookbook"],
+              primary_kpi: `Reach & Hook Rate (>35%) — Allocated ₹${tofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Middle of Funnel (Retargeting)" as const,
+              budget_split_pct: 30,
+              recommended_channels: ["Instagram Feed", "Story Retargeting"],
+              audience_targeting: ["Profile engagers (last 30 days)", "Reels video viewers (50%+)"],
+              ad_formats: ["Fit & Fabric Quality Comparison", "Customer Try-on & Styling Carousel"],
+              primary_kpi: `Click-Through Rate (CTR > 2.0%) — Allocated ₹${mofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Bottom of Funnel (Conversion)" as const,
+              budget_split_pct: 20,
+              recommended_channels: ["WhatsApp Click-to-Chat Ads", "Instagram DM Ads"],
+              audience_targeting: ["Cart abandoners & high-intent engagers"],
+              ad_formats: ["Limited Drop Size Alert with WhatsApp Catalog CTA", "Weekend Store Visit Special Offer"],
+              primary_kpi: `Cost per WhatsApp Lead (<₹45) — Allocated ₹${bofuAmt.toLocaleString("en-IN")}`,
+            },
+          ]
+        : isGym
+        ? [
+            {
+              stage: "Top of Funnel (Awareness)" as const,
+              budget_split_pct: 50,
+              recommended_channels: ["Meta Video Ads", "Instagram Reels"],
+              audience_targeting: ["Working professionals aged 24-45", "Interests: Fitness, Weight loss, Strength training"],
+              ad_formats: ["Monsoon Shred Challenge Announcement (3s hook)", "Facility & Trainer Walkthrough Reel"],
+              primary_kpi: `Reach & Video Hook Rate (>30%) — Allocated ₹${tofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Middle of Funnel (Retargeting)" as const,
+              budget_split_pct: 30,
+              recommended_channels: ["Instagram Feed Ads", "Facebook Lead Ads"],
+              audience_targeting: ["30-day video viewers and profile visitors"],
+              ad_formats: ["Trainer Guidance & Nutrition Plan Breakdown", "Real Transformation Stories"],
+              primary_kpi: `CTR (>1.8%) & Landing Page Visits — Allocated ₹${mofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Bottom of Funnel (Conversion)" as const,
+              budget_split_pct: 20,
+              recommended_channels: ["WhatsApp Click-to-Chat", "Meta Instant Lead Forms"],
+              audience_targeting: ["High-intent engagers seeking gym trial pass"],
+              ad_formats: ["Claim 2-Day Free Trial Pass (Limited Slots)", "Direct WhatsApp Trainer Consultation"],
+              primary_kpi: `Cost per Trial Pass Inquiry (<₹90) — Allocated ₹${bofuAmt.toLocaleString("en-IN")}`,
+            },
+          ]
+        : [
+            {
+              stage: "Top of Funnel (Awareness)" as const,
+              budget_split_pct: 50,
+              recommended_channels: ["Meta Ads (Instagram & Facebook)"],
+              audience_targeting: ["Broad local demographics", "Relevant category interests"],
+              ad_formats: ["Short-form Video Reels", "Carousel Value Decks"],
+              primary_kpi: `Impressions & Hook Rate (>30%) — Allocated ₹${tofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Middle of Funnel (Retargeting)" as const,
+              budget_split_pct: 30,
+              recommended_channels: ["Instagram Feed", "Facebook Retargeting"],
+              audience_targeting: ["Website visitors (last 30 days)", "Page engagers"],
+              ad_formats: ["Product Demonstration", "Verified Case Studies"],
+              primary_kpi: `CTR (>1.8%) — Allocated ₹${mofuAmt.toLocaleString("en-IN")}`,
+            },
+            {
+              stage: "Bottom of Funnel (Conversion)" as const,
+              budget_split_pct: 20,
+              recommended_channels: ["WhatsApp Click-to-Chat Ad", "Direct Offer Lead Ads"],
+              audience_targeting: ["Engaged leads and repeat visitors"],
+              ad_formats: ["Direct Special Offer", "Limited Period Discount CTA"],
+              primary_kpi: `Cost per Conversion — Allocated ₹${bofuAmt.toLocaleString("en-IN")}`,
+            },
+          ];
+
+      const abTestMatrix = isClothing
+        ? [
+            "Hook Test: 'Stop styling oversized tees wrong' vs. 'The 3-second drop-shoulder upgrade'",
+            "Format Test: 1080x1080 3-Slide Lookbook vs. 9:16 Vertical Outfit Transformation Reel",
+            "CTA Test: 'Send CATALOG on WhatsApp' vs. 'Visit Store for Weekend Exclusive'",
+          ]
+        : isGym
+        ? [
+            "Hook Test: 'Can you commit to 30 days?' vs. 'The monsoon shred workout breakdown'",
+            "Format Test: Trainer Demo Reel vs. Free Pass Carousel Card",
+            "CTA Test: 'Claim 2-Day Free Trial Pass' vs. 'WhatsApp for Personal Assessment'",
+          ]
+        : [
+            "Hook Test: Problem-led opening vs. Direct benefit opening",
+            "Format Test: 1080x1080 Static graphic vs. 9:16 Vertical Reel walkthrough",
+            "CTA Test: 'Get WhatsApp Offer' vs. 'Visit Store / Order Online'",
+          ];
+
+      return {
+        total_budget: budget || null,
+        campaign_structure: campaignStructure,
+        bidding_strategy: "Start with Lowest Cost (Auto-bid) for initial 50 conversion events to exit learning phase, then transition to Target CPA / Cost Cap.",
+        ab_test_matrix: abTestMatrix,
+        execution_note: "Planning blueprint only. No live campaigns will be launched or budget debited without explicit client confirmation.",
+      };
+    },
   });
 }
 
@@ -281,50 +361,89 @@ Requirements:
     schema: seoReportSchema,
     system: "You are the Senior SEO/SEM Architect. Produce data-backed keyword blueprints, search intent mappings, and actionable on-page technical specifications.",
     taskType: "seo:keywords",
-    fallback: () => ({
-      target_focus: `${brand.name} Service & Solution Discovery`,
-      keyword_clusters: [
-        {
-          topic: "Core Commercial Search",
-          keywords: [
-            { keyword: `${brand.name.toLowerCase()} services`, intent: "transactional" as const, priority: "high" as const },
-            { keyword: "best digital marketing agency for small business", intent: "commercial" as const, priority: "high" as const },
-            { keyword: "affordable marketing agency packages", intent: "commercial" as const, priority: "medium" as const },
-          ],
-        },
-        {
-          topic: "Educational / Problem Aware",
-          keywords: [
-            { keyword: "how to get more clients without paid ads", intent: "informational" as const, priority: "medium" as const },
-            { keyword: "why instagram ads are not converting", intent: "informational" as const, priority: "high" as const },
-          ],
-        },
-      ],
-      on_page_checklist: [
-        "Include primary keyword in H1 tag and within the first 100 words of page body.",
-        "Ensure page load time is under 2.5 seconds on mobile with WebP image compression.",
-        "Add LocalBusiness / Organization Schema.org structured data markup.",
-        "Implement clean SEO-friendly slug structure (e.g., /services/digital-marketing).",
-        "Add descriptive alt text to all visual creative assets.",
-      ],
-      meta_recommendations: [
-        {
-          page: "Homepage",
-          meta_title: `${brand.name} | ROI-Focused Digital Marketing Agency`,
-          meta_description: `Scale your business with ${brand.name}. Proven campaigns, transparent reporting, and high-converting creative strategies. Book your consultation today.`,
-        },
-        {
-          page: "Services Page",
-          meta_title: `Performance Marketing & Content Strategies | ${brand.name}`,
-          meta_description: `Explore data-driven marketing services built for measurable growth. Transparent deliverables and dedicated strategy managers.`,
-        },
-      ],
-      content_gap_opportunities: [
-        "Comparison guide: In-house marketing vs. Agency operating system",
-        "ROI Calculator for local advertising spend",
-        "Case study breakdown on lowering customer acquisition costs",
-      ],
-    }),
+    fallback: () => {
+      const prodWord = brand.products.split(",")[0]?.trim() || "products";
+      const secondProd = brand.products.split(",")[1]?.trim() || "collection";
+      const isClothing = /cloth|apparel|fashion|shirt|jeans|streetwear|t-shirt|sneaker/i.test(brand.products);
+      const isGym = /gym|fitness|workout|crossfit|trainer|training|nutrition/i.test(brand.products);
+      const isFood = /cafe|chai|restaurant|food|dining|snack/i.test(brand.products);
+
+      const commercialKeywords = isClothing
+        ? [
+            { keyword: `${brand.name.toLowerCase()} store`, intent: "transactional" as const, priority: "high" as const },
+            { keyword: `oversized t-shirts and streetwear near me`, intent: "commercial" as const, priority: "high" as const },
+            { keyword: `best cargo pants and denim collection`, intent: "commercial" as const, priority: "medium" as const },
+          ]
+        : isGym
+        ? [
+            { keyword: `${brand.name.toLowerCase()} gym membership`, intent: "transactional" as const, priority: "high" as const },
+            { keyword: `best gym and fitness training near me`, intent: "commercial" as const, priority: "high" as const },
+            { keyword: `personal trainers and weight loss program`, intent: "commercial" as const, priority: "medium" as const },
+          ]
+        : isFood
+        ? [
+            { keyword: `${brand.name.toLowerCase()} menu`, intent: "transactional" as const, priority: "high" as const },
+            { keyword: `best chai and cafe near me`, intent: "commercial" as const, priority: "high" as const },
+            { keyword: `monsoon special snacks and cafe orders`, intent: "commercial" as const, priority: "medium" as const },
+          ]
+        : [
+            { keyword: `${brand.name.toLowerCase()} ${prodWord}`, intent: "transactional" as const, priority: "high" as const },
+            { keyword: `best ${prodWord} providers near me`, intent: "commercial" as const, priority: "high" as const },
+            { keyword: `affordable ${secondProd} packages`, intent: "commercial" as const, priority: "medium" as const },
+          ];
+
+      const educationalKeywords = isClothing
+        ? [
+            { keyword: `how to style oversized t-shirts without looking baggy`, intent: "informational" as const, priority: "high" as const },
+            { keyword: `best sneaker and cargo pant color combinations`, intent: "informational" as const, priority: "medium" as const },
+          ]
+        : isGym
+        ? [
+            { keyword: `how to start a 30-day weight loss shred challenge`, intent: "informational" as const, priority: "high" as const },
+            { keyword: `beginner workout routine for functional strength`, intent: "informational" as const, priority: "medium" as const },
+          ]
+        : isFood
+        ? [
+            { keyword: `what makes authentic kadak chai so popular`, intent: "informational" as const, priority: "high" as const },
+            { keyword: `best rainy day cafe food pairings`, intent: "informational" as const, priority: "medium" as const },
+          ]
+        : [
+            { keyword: `how to choose the best ${prodWord}`, intent: "informational" as const, priority: "high" as const },
+            { keyword: `top mistakes to avoid when buying ${secondProd}`, intent: "informational" as const, priority: "medium" as const },
+          ];
+
+      return {
+        target_focus: `${brand.name} Search & Product Discovery`,
+        keyword_clusters: [
+          { topic: "Commercial & Local Search", keywords: commercialKeywords },
+          { topic: "Style & Educational Search", keywords: educationalKeywords },
+        ],
+        on_page_checklist: [
+          "Include primary business and product keywords in H1 tag and first 100 words.",
+          "Ensure mobile page load is under 2.5 seconds with optimized WebP media.",
+          "Implement LocalBusiness Schema.org with store address, hours, and WhatsApp link.",
+          "Add descriptive alt text to all product/lookbook imagery.",
+          "Clear CTA button above the fold linking to WhatsApp catalog or store visit map.",
+        ],
+        meta_recommendations: [
+          {
+            page: "Homepage",
+            meta_title: `${brand.name} | Premium ${prodWord} & Local Store`,
+            meta_description: `Explore ${brand.name} for latest ${prodWord} and ${secondProd}. Premium quality, best fits, and instant WhatsApp support. Visit us or order online.`,
+          },
+          {
+            page: "Collection / Catalog Page",
+            meta_title: `Shop Trending ${prodWord} | ${brand.name}`,
+            meta_description: `Discover new arrivals at ${brand.name}. High-comfort fits, fresh drops, and quick size availability on WhatsApp.`,
+          },
+        ],
+        content_gap_opportunities: [
+          `Local styling and fit guide for ${brand.name} customers`,
+          `Trending lookbook and fabric care breakdown`,
+          `Customer fit check and sizing chart walkthrough`,
+        ],
+      };
+    },
   });
 }
 
@@ -379,47 +498,96 @@ Strictly avoid buzzwords (no "elevate", "unlock", "game-changer"), invented disc
     system: "You are the Lead Creative Copywriter trained on elite Direct-Response frameworks (AIDA, PAS, Hook-Story-Offer, and Eugene Schwartz's 5 Stages of Awareness). You write scroll-stopping, high-converting copy that sounds authentic, punchy, and human. Never use robotic marketing clichés.",
     taskType: "creative:write",
     fallback: () => {
-      // Unique deterministic fallbacks — never one repeated template across posts.
       const idx = opts?.variantIndex ?? 0;
-      const angle = idx % 4;
       const shortTopic = topic.replace(/^Day\s*\d+[:\s-]*/i, "").trim();
       const audienceLine = audience || "your customers";
-      const hooks = [
-        `${shortTopic} — the angle nobody talks about.`,
-        `Stop scrolling: ${shortTopic} explained in 30 seconds.`,
-        `What most people get wrong about ${shortTopic}.`,
-        `Real talk on ${shortTopic} (before you scroll).`,
-      ];
-      const bodies = [
-        `If you care about ${shortTopic}, this one is for ${audienceLine}.\n\nHere is what actually matters:\n1. Start with the real need, not the noise.\n2. Show the proof in plain language.\n3. Make the next step effortless.\n\nSave this and share it with someone who needs it.`,
-        `We get asked about ${shortTopic} a lot — especially by ${audienceLine}.\n\nThe short version: clear beats clever. Focus on ${products} and the outcome people want, not jargon.\n\nWhich part do you want us to break down next?`,
-        `Quick checklist for ${shortTopic}:\n\n✓ Who it is for: ${audienceLine}\n✓ Why it matters right now\n✓ What to do next (one step only)\n\nDM us or tap the link in bio if you want help applying this to ${brand.name}.`,
-        `${shortTopic} does not have to be complicated.\n\nFor ${audienceLine}, the winning formula is simple: relevant offer, honest copy, one clear CTA.\n\nTry it this week and tell us what changed.`,
-      ];
-      const ctaByAngle = [
-        `Send us a DM with "${shortTopic.split(" ")[0]?.toUpperCase() || "INFO"}" and we will share the details.`,
-        `Visit the link in bio or WhatsApp us to talk through ${shortTopic}.`,
-        `Tap the link in bio — limited slots this month for ${brand.name} customers.`,
-        `Comment "${shortTopic.split(" ")[0]?.toUpperCase() || "YES"}" and we will follow up with next steps.`,
-      ];
+
+      const isClothing = /cloth|apparel|fashion|shirt|jeans|streetwear|t-shirt|sneaker/i.test(products);
+      const isGym = /gym|fitness|workout|crossfit|trainer|training|nutrition/i.test(products);
+      const isFood = /cafe|chai|restaurant|food|dining|snack/i.test(products);
+
+      // 4 distinct angle hooks
+      const hooks = isClothing
+        ? [
+            `Stop styling ${shortTopic} wrong — here is the 2026 rule.`,
+            `The 3-second fit check: how to wear ${shortTopic} effortlessly.`,
+            `Why ${shortTopic} is dominating college & street style right now.`,
+            `Before you buy another piece: read this on ${shortTopic}.`,
+          ]
+        : isGym
+        ? [
+            `The biggest mistake people make with ${shortTopic} (and the fix).`,
+            `30-second breakdown: how ${shortTopic} actually transforms results.`,
+            `Why traditional methods fail where ${shortTopic} succeeds.`,
+            `Real talk on ${shortTopic} before your next workout session.`,
+          ]
+        : isFood
+        ? [
+            `Why authentic ${shortTopic} hits differently this season.`,
+            `The secret behind ${shortTopic} — what our kitchen does differently.`,
+            `Your rainy day craving sorted: ${shortTopic} walkthrough.`,
+            `Step inside our kitchen: how ${shortTopic} is freshly prepared.`,
+          ]
+        : [
+            `${shortTopic} — the angle nobody talks about.`,
+            `Stop scrolling: ${shortTopic} explained in 30 seconds.`,
+            `What most people get wrong about ${shortTopic}.`,
+            `Real talk on ${shortTopic} (before you scroll).`,
+          ];
+
+      const angle = idx % hooks.length;
+
+      // 3 genuinely different conversion caption angles per post
+      const variant1 = isClothing
+        ? `Fit & Styling Breakdown:\n\nIf you're wearing ${shortTopic}, remember the golden streetwear rule: proportion balance. Never pair baggy with sloppy.\n\n3 Essential Checkpoints:\n1. Silhouette: Keep the shoulders drop-cut and the hem clean.\n2. Fabric: Heavyweight 240+ GSM cotton holds structure all day.\n3. Palette: Earthy neutrals with crisp white sneakers.\n\nSave this post for your next weekend outfit check!`
+        : isGym
+        ? `Form & Progression Breakdown:\n\nIf you want sustainable results from ${shortTopic}, focus on structured consistency over random intensity.\n\n3 Key Principles:\n1. Progressive overload: Track weights, not just sweat.\n2. Nutrition alignment: Match protein intake to recovery demands.\n3. Accountability: Work with certified coaches who correct form.\n\nSave this reminder before your next training block!`
+        : `Expert Blueprint:\n\nIf you care about ${shortTopic}, here is what actually moves the needle for ${audienceLine}:\n\n1. Clear need over industry noise.\n2. Transparent, verifiable process.\n3. Effortless next steps with zero hidden surprises.\n\nBookmark this and share with someone who needs it today.`;
+
+      const variant2 = isClothing
+        ? `From morning lectures to evening café scenes — ${shortTopic} is crafted for effortless all-day wear.\n\nNo stiff materials, no awkward cuts. Just breathable comfort and tailored proportions designed for ${audienceLine}.\n\nTag a friend who needs a wardrobe upgrade this season!`
+        : isGym
+        ? `Built for busy schedules: ${shortTopic} is designed for ${audienceLine} who want real strength and fat loss without wasting 2 hours a day.\n\nShow up, execute the program, feel the energy shift.\n\nShare this with your workout partner!`
+        : `Real-World Experience:\n\nEvery day at ${brand.name}, we work with ${audienceLine} who want simple, reliable solutions without the headache.\n\nNo fluff, no exaggerated promises — just honest execution and measurable care.\n\nWhich part of ${shortTopic} would you like us to explain next?`;
+
+      const variant3 = isClothing
+        ? `Weekend Drop Spotlight: ${shortTopic} is now available in store & on our WhatsApp catalog.\n\nLimited pieces per size (S to XXL) — once a batch sells out, restocks take 3-4 weeks.\n\n📲 Send 'CATALOG' on WhatsApp to browse prices & size availability instantly!\n📍 Or visit ${brand.name} this weekend for an in-store trial and exclusive styling advice.`
+        : isGym
+        ? `Limited Pass Alert: We are opening 15 complimentary 2-day trial passes for ${shortTopic} this week.\n\nExperience our facility, meet certified trainers, and get your fitness assessment done.\n\n📲 DM 'TRIAL' or WhatsApp us to claim your 2-day pass before slots close!`
+        : `Direct Action: If ${shortTopic} is on your priority list, ${brand.name} is ready to help.\n\nNo delays, no sales pressure — just a clear, honest conversation about your requirements.\n\n📲 Send a DM with 'DETAILS' or WhatsApp us today to get started!`;
+
+      const ctaOptions = isClothing
+        ? [
+            `Send 'CATALOG' on WhatsApp to check available sizes and styles.`,
+            `Visit ${brand.name} this weekend — directions & catalog link in bio!`,
+            `DM us your size and we will share available options right now.`,
+          ]
+        : isGym
+        ? [
+            `Claim your 2-day free trial pass — DM 'TRIAL' or WhatsApp us!`,
+            `WhatsApp us to schedule your personalized fitness assessment.`,
+            `Visit ${brand.name} this week — limited trial passes available!`,
+          ]
+        : [
+            `Send us a DM with "INFO" and our team will assist you immediately.`,
+            `Visit the link in bio or WhatsApp us for transparent pricing.`,
+            `Tap the link in bio to explore full details and get started.`,
+          ];
+
       return {
         calendar_date: new Date().toISOString().slice(0, 10),
         platform,
         format,
         topic,
         hook: hooks[angle] as string,
-        objective: `Help ${audienceLine} take action on ${shortTopic} for ${brand.name}.`,
-        caption_variants: [
-          bodies[angle] as string,
-          `Story angle: A customer once asked us about ${shortTopic}. We kept the answer simple — focus on the outcome, show the process, remove friction.\n\nThat is exactly how we approach ${products} at ${brand.name}.\n\nWant the full breakdown?`,
-          `Direct offer: If ${shortTopic} is on your list this month, ${brand.name} can help.\n\nNo hype — just a clear next step for ${audienceLine}.\n\nWhatsApp or DM to get started.`,
-        ],
+        objective: `Drive verified interest and WhatsApp catalog/trial inquiries for ${shortTopic} at ${brand.name}.`,
+        caption_variants: [variant1, variant2, variant3],
         audience: audienceLine,
         hashtags: [
           ...(brand.products.toLowerCase().includes("fit") || brand.products.toLowerCase().includes("gym") || brand.products.toLowerCase().includes("wellness")
             ? ["#FitnessGoals", "#Transformation", "#GymLife", "#HealthIndia"]
-            : brand.products.toLowerCase().includes("cloth") || brand.products.toLowerCase().includes("fashion")
-            ? ["#MensFashion", "#OOTD", "#StyleTips", "#FashionIndia"]
+            : brand.products.toLowerCase().includes("cloth") || brand.products.toLowerCase().includes("fashion") || brand.products.toLowerCase().includes("streetwear")
+            ? ["#StreetStyleIndia", "#MensFashion", "#OOTDIndia", "#SneakerheadIndia", "#FashionDeals"]
             : brand.products.toLowerCase().includes("food") || brand.products.toLowerCase().includes("cafe") || brand.products.toLowerCase().includes("chai")
             ? ["#Foodie", "#CafeLife", "#GoodEats", "#PuneFoodie"]
             : ["#Business", "#Growth", "#Quality", "#Trusted"]),
@@ -427,10 +595,9 @@ Strictly avoid buzzwords (no "elevate", "unlock", "game-changer"), invented disc
           "#Explore",
           "#Featured",
           "#Community",
-          "#New",
         ].slice(0, 10),
-        cta: ctaByAngle[angle] as string,
-        alt_text: `Graphic for ${shortTopic} — ${brand.name}`,
+        cta: ctaOptions[angle % ctaOptions.length] as string,
+        alt_text: `Visual creative showcasing ${shortTopic} for ${brand.name}`,
       };
     },
   });
@@ -504,31 +671,31 @@ Shootable and grounded in reality. No fake testimonials, prices, or fabricated s
         scenes: [
           {
             n: 1,
-            visual: `Direct-to-camera or product/service close-up introducing ${topic}`,
+            visual: `Pattern Interrupt (0-3s): Fast camera cut with immediate physical action showcasing ${topic}`,
             shot_type: "close-up",
-            duration_s: 6,
+            duration_s: 3,
             on_screen_text: hooks[angle] as string,
             voiceover: voHooks[angle] as string,
           },
           {
             n: 2,
-            visual: `B-roll or screen demo showing the core value of ${topic} for ${audience}`,
+            visual: `Dynamic Demonstration (3-23s): Fast-paced cuts showcasing real fit, styling combos, or program breakdown for ${audience}`,
             shot_type: "montage",
-            duration_s: Math.max(10, duration - 14),
-            on_screen_text: "Why it matters",
-            voiceover: `Show the real benefit of ${topic} without hype — clear, honest, specific to ${brand.name}.`,
+            duration_s: Math.max(15, duration - 10),
+            on_screen_text: "The Real Difference",
+            voiceover: `Here is exactly what makes ${topic} stand out at ${brand.name} — premium quality, tailored fit, zero fluff.`,
           },
           {
             n: 3,
-            visual: `Clear CTA shot with brand handle pointing to bio / WhatsApp / store visit`,
+            visual: `Conversion Close (23-30s): Clear visual card with WhatsApp catalog link and store location directions`,
             shot_type: "medium",
-            duration_s: 8,
-            on_screen_text: "DM or tap link in bio".slice(0, 80),
-            voiceover: `Ready for ${topic}? DM us or tap the link in bio — ${brand.name} is one message away.`,
+            duration_s: 7,
+            on_screen_text: "DM 'CATALOG' or tap link in bio",
+            voiceover: `Want this? DM us 'CATALOG' on WhatsApp or visit ${brand.name} this weekend before sizes sell out!`,
           },
         ],
         music_mood: angle === 0 ? "Confident modern beat" : angle === 1 ? "Upbeat lifestyle pop" : "Warm acoustic groove",
-        captions_srt: `1\n00:00:00,000 --> 00:00:06,000\n${hooks[angle]}\n\n2\n00:00:06,000 --> 00:00:${String(Math.max(10, duration - 14)).padStart(2, "0")},000\nWhy ${topic} matters.\n\n3\n00:00:${String(Math.max(10, duration - 14)).padStart(2, "0")},000 --> 00:00:${String(duration).padStart(2, "0")},000\nDM or tap link in bio.`,
+        captions_srt: `1\n00:00:00,000 --> 00:00:03,000\n${hooks[angle]}\n\n2\n00:00:03,000 --> 00:00:23,000\nWhat makes ${topic} stand out.\n\n3\n00:00:23,000 --> 00:00:30,000\nDM 'CATALOG' or visit us this weekend.`,
         thumbnail_idea: `Bold frame for "${topic.slice(0, 35)}" with ${industry} styling`,
       };
     },

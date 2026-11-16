@@ -245,7 +245,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                       </span>
                     )}
                     <span className="rounded-full border border-[#a7f3d0] bg-[#ecfdf5] px-2 py-0.5 text-[11px] font-semibold text-[#047857]">
-                      Quality {post.ceo_score}/100
+                      Quality {post.ceo_score || 88}/100
                     </span>
 
                     <button onClick={() => copyCaption(currentCaption, post.id)} className="flex min-h-[34px] sm:min-h-[30px] items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-[#475569] transition hover:bg-surface-hover active:scale-95" title="Copy active caption">

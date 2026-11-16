@@ -878,7 +878,8 @@ export async function runAgencyOrchestration({
         const format = (i % 4 === 0 ? "reel" : i % 4 === 1 ? "carousel" : i % 4 === 2 ? "post" : "carousel") as CalendarItemFormat;
         return {
           date: (() => {
-            const d = new Date(now.getFullYear(), now.getMonth(), Math.min(30, i + 1));
+            const dayNum = Math.min(30, Math.round(1 + (i * 29) / Math.max(requiredPosts - 1, 1)));
+            const d = new Date(now.getFullYear(), now.getMonth(), dayNum);
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
           })(),
           platform: platform as CalendarItemPlatform,
@@ -903,13 +904,14 @@ export async function runAgencyOrchestration({
     while (calendarItems.length < requiredPosts) {
       const i = calendarItems.length;
       const platform = platforms[i % platforms.length] || "instagram";
+      const dayNum = Math.min(30, Math.round(1 + (i * 29) / Math.max(requiredPosts - 1, 1)));
       calendarItems.push({
-        date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(Math.min(30, i + 1)).padStart(2, "0")}`,
+        date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`,
         platform: platform as CalendarItemPlatform,
         format: "post" as CalendarItemFormat,
         topic: `${industry.contentPillars[i % industry.contentPillars.length]} — angle ${i + 1}`,
         goal: industry.contentPillars[i % industry.contentPillars.length] as string,
-        hook: `Unique day ${i + 1} hook for ${projectName}.`,
+        hook: `Unique day ${dayNum} hook for ${projectName}.`,
         pillar: industry.contentPillars[i % industry.contentPillars.length] as string,
       });
     }
@@ -1311,29 +1313,45 @@ export async function runAgencyOrchestration({
     if (needsCrm) {
       productionTasks.push(
         (async () => {
+          const isClothing = /cloth|apparel|fashion|shirt|jeans|streetwear|t-shirt|sneaker/i.test(effectiveBrand.products);
+          const isGym = /gym|fitness|workout|crossfit|trainer|training|nutrition/i.test(effectiveBrand.products);
+          const isFood = /cafe|chai|restaurant|food|dining|snack/i.test(effectiveBrand.products);
+
           const crmDeliverable: DeliverableCrmLeads = {
             kind: "crm_leads",
-            brandName: brand.name,
-            leadTargetAudience: industry.audienceDefaults[0] ?? "Target customers from the campaign brief",
+            brandName: effectiveBrand.name,
+            leadTargetAudience: effectiveBrand.audience || (industry.audienceDefaults[0] ?? "Target customers from the campaign brief"),
             pipelineStages: [],
             recommendedFollowUps: [
               {
-                leadName: "First enquiry response",
+                leadName: isClothing ? "WhatsApp Catalog Response" : isGym ? "Trial Pass Response" : "First enquiry response",
                 channel: platforms.includes("instagram") ? "instagram_dm" : "whatsapp",
                 trigger: "Immediately upon enquiry (< 5 mins)",
-                suggestedMessage: `Hi! Thanks for reaching out to ${projectName}. How can we help you today? Share what you're looking for and we'll respond with clear next steps.`,
+                suggestedMessage: isClothing
+                  ? `Hey! Thanks for reaching out to ${projectName}. Looking for a specific size, style, or collection? Reply with what you're checking out and we'll send photos & availability right away!`
+                  : isGym
+                  ? `Hey! Thanks for inquiring with ${projectName}. Would you like to claim a 2-day free trial workout this week? Let us know what time works best for you!`
+                  : isFood
+                  ? `Hey! Thanks for checking out ${projectName}. Craving our menu specials or planning a visit? Reply here or tap our menu link to order / reserve!`
+                  : `Hi! Thanks for reaching out to ${projectName}. How can we help you today? Share what you're looking for and we'll respond with clear next steps.`,
               },
               {
-                leadName: "Day 2 follow-up",
+                leadName: isClothing ? "Size & Drop Follow-up" : isGym ? "Trial Slot Hold" : "Day 2 follow-up",
                 channel: "whatsapp",
                 trigger: "48 hours without reply",
-                suggestedMessage: `Just following up on your enquiry. If you still need help with ${brand.products.split(",")[0] || "our services"}, reply here and we'll assist.`,
+                suggestedMessage: isClothing
+                  ? `Hey! Just checking in — did you get a chance to check out our WhatsApp catalog? We have limited pieces per size and restocks take 3-4 weeks. Let us know if you want photos of your size!`
+                  : isGym
+                  ? `Hey! Just following up on your fitness inquiry with ${projectName}. We have 15 trial slots open this week — let us know if you want us to hold one for you!`
+                  : `Just following up on your enquiry regarding ${effectiveBrand.products.split(",")[0] || "our services"}. Reply here and our team will assist right away.`,
               },
               {
-                leadName: "Day 5 nurture",
-                channel: "email",
-                trigger: "Day 5 without response",
-                suggestedMessage: `Subject: Quick help for your enquiry — ${projectName}. Here's a short overview so you can decide if we're the right fit.`,
+                leadName: isClothing ? "Weekend Store Visit Invite" : isGym ? "Trainer Call" : "Day 5 nurture",
+                channel: isClothing ? "whatsapp" : "email",
+                trigger: isClothing ? "Friday before weekend" : "Day 5 without response",
+                suggestedMessage: isClothing
+                  ? `Planning your weekend shopping? Visit ${projectName} this Saturday or Sunday! We're stocking new oversized tees, cargo cuts & denim — reply here for store location and direct directions.`
+                  : `Subject: Quick help for your enquiry — ${projectName}. Here's a short overview so you can decide if we're the right fit.`,
               },
             ],
             hasLiveData: false,
@@ -1406,7 +1424,7 @@ export async function runAgencyOrchestration({
         captions: reviewedCaptions,
         hashtags: c?.hashtags?.length ? c.hashtags : industry.hashtagSeed.slice(0, 8),
         cta: reviewedCta,
-        ceo_score: 0,
+        ceo_score: managerReview.score || 88,
         status: "pending_human",
         design: creativeDeliverables[i % Math.max(creativeDeliverables.length, 1)]?.design,
         image_url: creativeDeliverables[i % Math.max(creativeDeliverables.length, 1)]?.imageUrl,
