@@ -395,9 +395,9 @@ export function AgencyChatWorkspace() {
         </div>
 
         {/* Center Content Stream / Empty State */}
-        <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-1 py-4 sm:px-4 smooth-scroll">
+        <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-1 py-4 sm:px-4 smooth-scroll flex flex-col">
           {messages.length === 0 ? (
-            <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center py-6 sm:py-10 text-center select-none">
+            <div className="mx-auto my-auto flex w-full max-w-2xl flex-col items-center justify-center py-6 sm:py-8 text-center select-none">
               {/* Floating Animated Crystal Star Emblem (Matching Image 1 & 3) */}
               <motion.div
                 initial={{ scale: 0.8, opacity: 0, y: 10 }}
@@ -411,7 +411,7 @@ export function AgencyChatWorkspace() {
                 <motion.div
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative z-10 flex h-24 w-24 items-center justify-center rounded-3xl"
+                  className="relative z-10 flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-3xl"
                 >
                   <Image
                     src="/logo-emblem-transparent.png"
@@ -429,7 +429,7 @@ export function AgencyChatWorkspace() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.5 }}
-                className="font-display mt-5 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B]"
+                className="font-display mt-4 sm:mt-5 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B]"
               >
                 Welcome, {userName}!
               </motion.h2>
@@ -443,12 +443,28 @@ export function AgencyChatWorkspace() {
                 How can I help you today?
               </motion.p>
 
+              {/* ── Centered Pill Prompt Bar (Always in Center on Home!) ───────── */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.32, duration: 0.5 }}
+                className="mt-6 sm:mt-7 w-full max-w-2xl px-1"
+              >
+                <ChatComposer
+                  onSendMessage={handleSendMessage}
+                  onStop={handleStop}
+                  isLoading={isLoading}
+                  disabled={false}
+                  initialValue={composerPreset}
+                />
+              </motion.div>
+
               {/* 3 Quick Action Suggestion Cards (Image 1 Style) */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35, duration: 0.5 }}
-                className="mt-8 grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-3"
+                transition={{ delay: 0.42, duration: 0.5 }}
+                className="mt-6 sm:mt-7 grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-3"
               >
                 {/* Card 1: Generate Visual / Campaign */}
                 <button
@@ -458,7 +474,7 @@ export function AgencyChatWorkspace() {
                       "Create a 30-day Instagram marketing campaign for my business with 12 posts, 4 Reels, and calendar"
                     )
                   }
-                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-4 sm:p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
                 >
                   <div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-100 to-orange-100 text-amber-700 shadow-2xs group-hover:scale-110 transition-transform">
@@ -483,7 +499,7 @@ export function AgencyChatWorkspace() {
                       "Audit our current marketing strategy and suggest a high-converting 30-day roadmap"
                     )
                   }
-                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-4 sm:p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
                 >
                   <div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-100 to-violet-100 text-purple-700 shadow-2xs group-hover:scale-110 transition-transform">
@@ -508,7 +524,7 @@ export function AgencyChatWorkspace() {
                       "Generate 4 viral Reels concepts with shot-by-shot visual breakdown and hooks"
                     )
                   }
-                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-4 sm:p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
                 >
                   <div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-pink-100 to-rose-100 text-rose-700 shadow-2xs group-hover:scale-110 transition-transform">
@@ -535,16 +551,18 @@ export function AgencyChatWorkspace() {
           )}
         </div>
 
-        {/* Floating Composer at Bottom */}
-        <div className="pt-2">
-          <ChatComposer
-            onSendMessage={handleSendMessage}
-            onStop={handleStop}
-            isLoading={isLoading}
-            disabled={false}
-            initialValue={composerPreset}
-          />
-        </div>
+        {/* Floating Composer at Bottom (When in Active Conversation) */}
+        {messages.length > 0 && (
+          <div className="pt-2">
+            <ChatComposer
+              onSendMessage={handleSendMessage}
+              onStop={handleStop}
+              isLoading={isLoading}
+              disabled={false}
+              initialValue={composerPreset}
+            />
+          </div>
+        )}
       </div>
 
       {/* ── Right Column: Chat History & Live Ledger (Matching Image 1) ───────── */}
