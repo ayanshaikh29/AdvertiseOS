@@ -30,12 +30,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen bg-bg text-ink antialiased">
         <Sidebar />
 
-        <div className="flex min-w-0 flex-1 flex-col transition-all duration-300 md:pl-[248px]">
+        <div className="flex min-w-0 flex-1 flex-col transition-all duration-300 md:pl-[240px]">
           <Topbar onPalette={() => setPalette(true)} />
 
           <main
             id="main"
-            className={`w-full flex-1 ${isDashboard ? "p-2 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:p-5 md:pb-5" : "mx-auto max-w-7xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-4 sm:px-6 md:pb-6"}`}
+            className={`w-full flex-1 ${isDashboard ? "h-[100dvh] p-2 sm:p-3 md:p-4 overflow-hidden" : "mx-auto max-w-7xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-4 sm:px-6 md:pb-6"}`}
           >
             {children}
           </main>

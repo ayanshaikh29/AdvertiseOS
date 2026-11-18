@@ -1,12 +1,27 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { ChatMessageItem } from "@/components/chat/ChatMessageItem";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ChatHistoryPanel } from "@/components/chat/ChatHistoryPanel";
 import { TeamPanel } from "@/components/chat/TeamPanel";
 import type { Conversation, ChatMessage, ChatAttachment, AgentActivity } from "@/types/chat";
-import { Sparkles, Layers, ShieldCheck, Zap, Bot, X, PanelRightOpen, ListTodo, Building2 } from "lucide-react";
+import {
+  Sparkles,
+  Bot,
+  X,
+  History,
+  Activity,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Wand2,
+  Palette,
+  Image as ImageIcon,
+} from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export function AgencyChatWorkspace() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -15,22 +30,27 @@ export function AgencyChatWorkspace() {
   const [brands, setBrands] = useState<Array<{ id: string; name: string }>>([]);
   const [activeBrand, setActiveBrand] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [railOpen, setRailOpen] = useState(false);
-  const [teamOpen, setTeamOpen] = useState(true);
-  const [mobileLedgerOpen, setMobileLedgerOpen] = useState(false);
+  const [userName, setUserName] = useState("Ayan");
+  const [rightPanelTab, setRightPanelTab] = useState<"history" | "ledger">("history");
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [composerPreset, setComposerPreset] = useState("");
+
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
-      if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
     }, 100);
   }, []);
 
   const selectConversation = useCallback(
     async (id: string) => {
       setActiveConversationId(id);
-      setRailOpen(false);
+      setMobileDrawerOpen(false);
       try {
         const res = await fetch(`/api/chat/conversations/${id}`);
         const data = await res.json();
@@ -43,22 +63,17 @@ export function AgencyChatWorkspace() {
     [scrollToBottom]
   );
 
-  // Background refresh of conversation list (does NOT touch active messages)
-  const refreshConversationsList = useCallback(
-    async (brandId?: string) => {
-      try {
-        const url = brandId ? `/api/chat/conversations?brandId=${brandId}` : "/api/chat/conversations";
-        const res = await fetch(url);
-        const data = await res.json();
-        setConversations(data.conversations || []);
-      } catch {
-        // network error — keep current state
-      }
-    },
-    []
-  );
+  const refreshConversationsList = useCallback(async (brandId?: string) => {
+    try {
+      const url = brandId ? `/api/chat/conversations?brandId=${brandId}` : "/api/chat/conversations";
+      const res = await fetch(url);
+      const data = await res.json();
+      setConversations(data.conversations || []);
+    } catch {
+      // ignore network errors
+    }
+  }, []);
 
-  // Initial load of conversations (selects first if none active)
   const loadConversations = useCallback(
     async (brandId?: string) => {
       try {
@@ -77,8 +92,18 @@ export function AgencyChatWorkspace() {
     [activeConversationId, selectConversation]
   );
 
-  // Load initial brands & conversations
   useEffect(() => {
+    // Fetch current user name
+    fetch("/api/session")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.session?.email) {
+          const raw = d.session.email.split("@")[0] || "Ayan";
+          setUserName(raw.charAt(0).toUpperCase() + raw.slice(1));
+        }
+      })
+      .catch(() => {});
+
     fetch("/api/brands")
       .then((r) => r.json())
       .then((d) => {
@@ -105,7 +130,6 @@ export function AgencyChatWorkspace() {
     return () => window.removeEventListener("brand-switched", handleBrandSwitched);
   }, [loadConversations]);
 
-  // Stop any in-flight run when unmounting
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const handleNewConversation = async () => {
@@ -120,7 +144,7 @@ export function AgencyChatWorkspace() {
         setConversations((prev) => [data.conversation, ...prev]);
         setActiveConversationId(data.conversation.id);
         setMessages([]);
-        setRailOpen(false);
+        setMobileDrawerOpen(false);
       }
     } catch {
       // ignore
@@ -154,7 +178,9 @@ export function AgencyChatWorkspace() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle }),
       });
-      setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title: newTitle } : c)));
+      setConversations((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, title: newTitle } : c))
+      );
     } catch {
       // ignore
     }
@@ -164,7 +190,11 @@ export function AgencyChatWorkspace() {
     abortRef.current?.abort();
   };
 
-  const handleSendMessage = async (text: string, attachments: ChatAttachment[], campaignId?: string) => {
+  const handleSendMessage = async (
+    text: string,
+    attachments: ChatAttachment[],
+    campaignId?: string
+  ) => {
     if ((!text.trim() && attachments.length === 0) || isLoading) return;
     setIsLoading(true);
 
@@ -192,6 +222,9 @@ export function AgencyChatWorkspace() {
 
     setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
     scrollToBottom();
+
+    // Auto-switch right panel to Live Ledger during active runs
+    setRightPanelTab("ledger");
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -256,25 +289,32 @@ export function AgencyChatWorkspace() {
                   else updated.push(activity);
                   return { ...m, agentActivities: updated };
                 }
-                if (event === "text_chunk") return { ...m, content: (m.content || "") + data.text };
+                if (event === "text_chunk")
+                  return { ...m, content: (m.content || "") + data.text };
                 if (event === "deliverable") {
                   const curDel = m.deliverables || [];
                   return { ...m, deliverables: [...curDel, data] };
                 }
-                if (event === "completed") return { ...m, campaignId: data.campaignId, status: "completed" };
-                if (event === "error") return { ...m, error: data.error, status: "error" };
+                if (event === "completed")
+                  return { ...m, campaignId: data.campaignId, status: "completed" };
+                if (event === "error")
+                  return { ...m, error: data.error, status: "error" };
                 return m;
               })
             );
             scrollToBottom();
           } catch {
-            // partial SSE frame — wait for more bytes
+            // partial SSE frame
           }
         }
       }
 
       setMessages((prev) =>
-        prev.map((m) => (m.id === assistantMsgId && m.status === "streaming" ? { ...m, status: "completed" } : m))
+        prev.map((m) =>
+          m.id === assistantMsgId && m.status === "streaming"
+            ? { ...m, status: "completed" }
+            : m
+        )
       );
     } catch (err: unknown) {
       const aborted = err instanceof DOMException && err.name === "AbortError";
@@ -307,153 +347,187 @@ export function AgencyChatWorkspace() {
     handleSendMessage(userMsg.content, userMsg.attachments || []);
   };
 
-  const currentBrandObj = brands.find((b) => b.id === activeBrand);
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
   const teamActivities: AgentActivity[] =
-    [...messages].reverse().find((m) => m.role === "assistant" && m.agentActivities?.length)?.agentActivities || [];
-  const hasTeam = teamActivities.length > 0;
-
-  const rail = (
-    <ChatSidebar
-      conversations={conversations}
-      activeId={activeConversationId}
-      onSelectConversation={selectConversation}
-      onNewConversation={handleNewConversation}
-      onDeleteConversation={handleDeleteConversation}
-      onRenameConversation={handleRenameConversation}
-    />
-  );
+    [...messages]
+      .reverse()
+      .find((m) => m.role === "assistant" && m.agentActivities?.length)?.agentActivities || [];
 
   return (
-    <div className="relative flex h-full w-full overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_3px_rgba(16,24,40,0.04)]">
-      {/* Left: Recent Tasks Sidebar */}
-      <aside className="hidden w-[260px] shrink-0 lg:block">{rail}</aside>
-      {railOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-[rgba(11,18,32,0.4)]" onClick={() => setRailOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] bg-surface shadow-2xl">
-            <button
-              onClick={() => setRailOpen(false)}
-              aria-label="Close tasks"
-              className="absolute right-2 top-2 z-10 rounded-lg p-2 text-muted hover:bg-surface-hover"
-            >
-              <X size={18} />
-            </button>
-            {rail}
-          </div>
-        </div>
-      )}
-
-      {/* Center: Main Workspace */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Workspace Task Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-border-subtle bg-surface px-4 py-3 sm:px-5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <button
-              onClick={() => setRailOpen(true)}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border text-muted transition hover:bg-surface-hover lg:hidden"
-              aria-label="Open task history"
-            >
-              <ListTodo size={16} />
-            </button>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-[#2563EB]">
-              <Bot size={18} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="font-display truncate text-sm font-bold tracking-tight text-ink">
-                  {activeConversation?.title || "AdvertiseOS Marketing Agency Workspace"}
-                </h2>
-                {currentBrandObj && (
-                  <span className="hidden shrink-0 items-center gap-1 rounded-full border border-border bg-surface-2 px-2.5 py-0.5 text-[10px] font-semibold text-muted sm:inline-flex">
-                    <Building2 size={10} />
-                    {currentBrandObj.name}
-                  </span>
-                )}
-              </div>
-              <p className="truncate text-[11px] text-[#475569]">
-                AI specialists work together · Quality-checked · You approve before anything goes live
-              </p>
+    <div className="relative flex h-full w-full gap-3 sm:gap-4 overflow-hidden">
+      {/* ── Center Stage: AI Workspace Canvas (Matching Image 1) ───────────────── */}
+      <div className="relative flex min-w-0 flex-1 flex-col rounded-3xl border border-black/[0.06] bg-white/80 p-3 sm:p-5 shadow-xs backdrop-blur-xl overflow-hidden">
+        {/* Subtle Top Utility Bar */}
+        <div className="flex items-center justify-between pb-2 sm:pb-3 border-b border-black/[0.04]">
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#F5F2EF] text-[#8B5CF6]">
+              <Sparkles size={14} />
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-display text-xs font-bold text-[#18181B] truncate max-w-[200px] sm:max-w-xs">
+                {activeConversation?.title || "AdvertiseOS Marketing Studio"}
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                <ShieldCheck size={11} /> Approval Gated
+              </span>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-2">
+            {/* Mobile History / Ledger Button */}
             <button
-              onClick={handleNewConversation}
-              className="hidden items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1D4ED8] sm:flex"
+              onClick={() => setMobileDrawerOpen(true)}
+              className="inline-flex xl:hidden items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-semibold text-[#18181B] shadow-2xs hover:bg-[#F5F2EF]"
             >
-              <Sparkles size={13} />
-              New task
+              <History size={13} />
+              <span>History</span>
             </button>
+
+            {/* Desktop Toggle Right Panel */}
             <button
-              onClick={() => {
-                if (typeof window !== "undefined" && window.innerWidth < 1280) {
-                  setMobileLedgerOpen((v) => !v);
-                } else {
-                  setTeamOpen((v) => !v);
-                }
-              }}
-              className="flex items-center gap-1.5 rounded-xl border border-border px-2.5 py-1.5 sm:px-3 text-xs font-semibold text-[#334155] transition hover:bg-surface-hover active:scale-95"
-              aria-pressed={teamOpen || mobileLedgerOpen}
+              onClick={() => setRightPanelOpen((v) => !v)}
+              className="hidden xl:inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-semibold text-[#52525B] shadow-2xs hover:bg-[#F5F2EF] hover:text-[#18181B]"
             >
-              <PanelRightOpen size={14} className="text-[#2563EB]" />
-              <span className="hidden xs:inline sm:inline">Agency Ledger</span>
+              <Activity size={13} className={teamActivities.length > 0 ? "text-emerald-600 animate-pulse" : ""} />
+              <span>{rightPanelOpen ? "Collapse Panel" : "View History"}</span>
             </button>
           </div>
         </div>
 
-        {/* Message Stream */}
-        <div ref={chatScrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
+        {/* Center Content Stream / Empty State */}
+        <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-1 py-4 sm:px-4 smooth-scroll">
           {messages.length === 0 ? (
-            <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft text-[#2563EB] shadow-[0_8px_24px_-12px_rgba(37,99,235,0.45)]">
-                <Sparkles size={28} />
-              </div>
-              <h3 className="font-display mt-5 text-2xl font-extrabold tracking-tight text-ink">
-                What should we create today?
-              </h3>
-              <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#475569]">
-                Describe your business and goal in plain language. Our AI team will research the market,
-                plan a calendar, write posts and reels, and prepare designs — all for your approval.
-              </p>
+            <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center py-6 sm:py-10 text-center select-none">
+              {/* Floating Animated Crystal Star Emblem (Matching Image 1 & 3) */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative flex items-center justify-center"
+              >
+                {/* Gentle Pulsing Glow Backdrop */}
+                <div className="absolute h-28 w-28 rounded-full bg-gradient-to-tr from-[#F97316]/20 via-[#EC4899]/20 to-[#8B5CF6]/25 blur-2xl animate-pulse" />
 
-              <div className="mt-8 grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="rounded-2xl border border-border bg-surface p-4 transition hover:border-[#bfdbfe] hover:shadow-sm">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft text-[#2563EB]">
-                    <Layers size={17} />
-                  </div>
-                  <h4 className="mt-2.5 text-sm font-bold text-ink">Full campaign package</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">
-                    Strategy, 30-day calendar, posts, reels & design briefs in one run
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-surface p-4 transition hover:border-[#a7f3d0] hover:shadow-sm">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                    <Zap size={17} />
-                  </div>
-                  <h4 className="mt-2.5 text-sm font-bold text-ink">2026 market-aware</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">
-                    Live trends, seasonal moments & industry benchmarks built into the plan
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-surface p-4 transition hover:border-[#c4b5fd] hover:shadow-sm">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                    <ShieldCheck size={17} />
-                  </div>
-                  <h4 className="mt-2.5 text-sm font-bold text-ink">You stay in control</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">
-                    Nothing publishes or spends without your review and approval
-                  </p>
-                </div>
-              </div>
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative z-10 flex h-24 w-24 items-center justify-center rounded-3xl"
+                >
+                  <Image
+                    src="/logo-emblem-transparent.png"
+                    alt="AdvertiseOS Glowing Star"
+                    width={96}
+                    height={96}
+                    priority
+                    className="object-contain drop-shadow-[0_8px_20px_rgba(249,115,22,0.35)]"
+                  />
+                </motion.div>
+              </motion.div>
 
-              <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-muted">
-                <span className="rounded-full border border-border bg-surface px-3 py-1.5">Try: “30-day Instagram plan for my clothing brand”</span>
-                <span className="rounded-full border border-border bg-surface px-3 py-1.5">Or: “Analyze competitors in my city”</span>
-              </div>
+              {/* Title & Greeting (Matching Image 1) */}
+              <motion.h2
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.5 }}
+                className="font-display mt-5 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B]"
+              >
+                Welcome, {userName}!
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25, duration: 0.5 }}
+                className="mt-1.5 text-sm sm:text-base text-[#71717A]"
+              >
+                How can I help you today?
+              </motion.p>
+
+              {/* 3 Quick Action Suggestion Cards (Image 1 Style) */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                className="mt-8 grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-3"
+              >
+                {/* Card 1: Generate Visual / Campaign */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setComposerPreset(
+                      "Create a 30-day Instagram marketing campaign for my business with 12 posts, 4 Reels, and calendar"
+                    )
+                  }
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                >
+                  <div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-100 to-orange-100 text-amber-700 shadow-2xs group-hover:scale-110 transition-transform">
+                      <Sparkles size={18} />
+                    </div>
+                    <h3 className="mt-3.5 text-sm font-bold text-[#18181B]">Generate visual</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-[#71717A]">
+                      Create multi-channel posts, reels & ad copy instantly
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-[11px] font-semibold text-[#8B5CF6] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Use template</span>
+                    <ArrowRight size={12} />
+                  </div>
+                </button>
+
+                {/* Card 2: Improve Prompt / Brief */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setComposerPreset(
+                      "Audit our current marketing strategy and suggest a high-converting 30-day roadmap"
+                    )
+                  }
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                >
+                  <div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-100 to-violet-100 text-purple-700 shadow-2xs group-hover:scale-110 transition-transform">
+                      <Wand2 size={18} />
+                    </div>
+                    <h3 className="mt-3.5 text-sm font-bold text-[#18181B]">Improve prompt</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-[#71717A]">
+                      Enhance your campaign brief automatically with target market data
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-[11px] font-semibold text-[#8B5CF6] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Use template</span>
+                    <ArrowRight size={12} />
+                  </div>
+                </button>
+
+                {/* Card 3: Explore Styles / Strategy */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setComposerPreset(
+                      "Generate 4 viral Reels concepts with shot-by-shot visual breakdown and hooks"
+                    )
+                  }
+                  className="group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] bg-gradient-to-b from-white to-[#FAF8F5] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-black/[0.12] hover:shadow-md text-left"
+                >
+                  <div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-pink-100 to-rose-100 text-rose-700 shadow-2xs group-hover:scale-110 transition-transform">
+                      <Palette size={18} />
+                    </div>
+                    <h3 className="mt-3.5 text-sm font-bold text-[#18181B]">Explore styles</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-[#71717A]">
+                      Apply 2026 market trends, positioning & brand angles
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center gap-1 text-[11px] font-semibold text-[#8B5CF6] opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Use template</span>
+                    <ArrowRight size={12} />
+                  </div>
+                </button>
+              </motion.div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 py-2">
               {messages.map((msg) => (
                 <ChatMessageItem key={msg.id} message={msg} onRetry={handleRetry} />
               ))}
@@ -461,36 +535,107 @@ export function AgencyChatWorkspace() {
           )}
         </div>
 
-        {/* Composer */}
-        <div className="border-t border-border-subtle bg-surface px-2 pb-4 pt-3 sm:px-4">
+        {/* Floating Composer at Bottom */}
+        <div className="pt-2">
           <ChatComposer
             onSendMessage={handleSendMessage}
             onStop={handleStop}
             isLoading={isLoading}
             disabled={false}
+            initialValue={composerPreset}
           />
         </div>
       </div>
 
-      {/* Right: Agency Live Ledger Panel (Desktop) */}
-      {teamOpen && (
-        <aside className="hidden w-[320px] shrink-0 xl:block">
-          <TeamPanel activities={teamActivities} onClose={() => setTeamOpen(false)} />
+      {/* ── Right Column: Chat History & Live Ledger (Matching Image 1) ───────── */}
+      {rightPanelOpen && (
+        <aside className="hidden xl:flex w-[320px] shrink-0 flex-col overflow-hidden">
+          {rightPanelTab === "history" ? (
+            <ChatHistoryPanel
+              conversations={conversations}
+              activeId={activeConversationId}
+              onSelectConversation={selectConversation}
+              onNewConversation={handleNewConversation}
+              onDeleteConversation={handleDeleteConversation}
+              onRenameConversation={handleRenameConversation}
+              activities={teamActivities}
+              activeTab={rightPanelTab}
+              onTabChange={setRightPanelTab}
+            />
+          ) : (
+            <div className="flex h-full flex-col rounded-3xl border border-black/[0.06] bg-white/90 p-4 shadow-sm backdrop-blur-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-black/[0.05]">
+                <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#F5F2EF]">
+                  <button
+                    onClick={() => setRightPanelTab("history")}
+                    className="rounded-xl px-3 py-1.5 text-xs font-bold text-[#71717A] hover:text-[#18181B] transition-all"
+                  >
+                    Chat history
+                  </button>
+                  <button
+                    onClick={() => setRightPanelTab("ledger")}
+                    className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#18181B] shadow-sm transition-all"
+                  >
+                    Live Ledger
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto pt-3">
+                <TeamPanel activities={teamActivities} onClose={() => setRightPanelTab("history")} />
+              </div>
+            </div>
+          )}
         </aside>
       )}
 
-      {/* Mobile/Tablet: Agency Live Ledger Drawer */}
-      {mobileLedgerOpen && (
-        <div className="fixed inset-0 z-50 xl:hidden">
-          <div
-            className="absolute inset-0 bg-[rgba(11,18,32,0.45)] backdrop-blur-sm transition-opacity"
-            onClick={() => setMobileLedgerOpen(false)}
-          />
-          <div className="absolute inset-y-0 right-0 flex w-[88%] max-w-[340px] flex-col bg-surface shadow-2xl pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
-            <TeamPanel activities={teamActivities} onClose={() => setMobileLedgerOpen(false)} />
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileDrawerOpen && (
+          <div className="fixed inset-0 z-50 xl:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+              onClick={() => setMobileDrawerOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="absolute inset-y-0 right-0 w-[88%] max-w-[340px] p-2 bg-[#F8F6F4]"
+            >
+              <div className="relative h-full w-full">
+                <button
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="absolute right-3 top-3 z-10 rounded-full bg-white p-1.5 text-[#71717A] shadow-xs"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+                {rightPanelTab === "history" ? (
+                  <ChatHistoryPanel
+                    conversations={conversations}
+                    activeId={activeConversationId}
+                    onSelectConversation={selectConversation}
+                    onNewConversation={handleNewConversation}
+                    onDeleteConversation={handleDeleteConversation}
+                    onRenameConversation={handleRenameConversation}
+                    activities={teamActivities}
+                    activeTab={rightPanelTab}
+                    onTabChange={setRightPanelTab}
+                  />
+                ) : (
+                  <div className="flex h-full flex-col rounded-3xl border border-black/[0.06] bg-white p-4 shadow-sm">
+                    <TeamPanel activities={teamActivities} onClose={() => setRightPanelTab("history")} />
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

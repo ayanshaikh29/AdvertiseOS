@@ -4,59 +4,48 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  Megaphone, CalendarDays, Inbox, BarChart3, Cog, ChevronLeft, ChevronRight, LogOut, Plug,
-  Building2, Users2, FolderKanban, Sparkles, ShieldCheck, FileText, type LucideIcon
+  Home,
+  Sparkles,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Palette,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { useAiCost, usePendingApprovals } from "@/components/shell/hooks";
+import { AdvertiseLogo } from "@/components/brand/AdvertiseLogo";
 
-type NavItem = { href: string; label: string; hint: string; icon: LucideIcon };
+type CleanNavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  badge?: string;
+};
 
-const GROUPS: Array<{ label: string; items: NavItem[] }> = [
-  {
-    label: "WORKSPACE",
-    items: [
-      { href: "/dashboard", label: "AI Workspace", hint: "Talk to your AI marketing manager", icon: Sparkles },
-      { href: "/clients", label: "Clients", hint: "Client workspaces & knowledge context", icon: Building2 },
-      { href: "/campaigns", label: "Projects", hint: "Campaigns, content & deliverables", icon: FolderKanban },
-    ],
-  },
-  {
-    label: "MARKETING",
-    items: [
-      { href: "/briefs", label: "Content Studio", hint: "Create posts, reels & ad copy", icon: Megaphone },
-      { href: "/calendar", label: "Calendar", hint: "Scheduled content, month & week", icon: CalendarDays },
-      { href: "/approvals", label: "Approvals", hint: "Review queue — nothing publishes without you", icon: ShieldCheck },
-    ],
-  },
-  {
-    label: "CUSTOMER MANAGEMENT",
-    items: [
-      { href: "/crm", label: "CRM & Leads", hint: "Lead pipeline & follow-ups", icon: Users2 },
-      { href: "/autopilot", label: "Trend Radar", hint: "Live market trends & autopilot", icon: Inbox },
-    ],
-  },
-  {
-    label: "INSIGHTS",
-    items: [{ href: "/analytics", label: "Analytics", hint: "Performance, spend & reports", icon: BarChart3 }],
-  },
-  {
-    label: "SETTINGS",
-    items: [
-      { href: "/integrations", label: "Integrations", hint: "Connected channels & ad platforms", icon: Plug },
-      { href: "/settings", label: "Settings", hint: "Governance, audit log & status", icon: Cog },
-    ],
-  },
+const MAIN_NAV: CleanNavItem[] = [
+  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/campaigns", label: "Studio", icon: Layers },
+  { href: "/brand", label: "Brand Voice", icon: Palette },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const pending = usePendingApprovals();
-  const { cost, limit, pct } = useAiCost();
+  const [userEmail, setUserEmail] = useState("Ayan Shaikh");
 
   useEffect(() => {
     setCollapsed(localStorage.getItem("advos-rail") === "1");
+    fetch("/api/session")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.session?.email) {
+          const name = d.session.email.split("@")[0] || "Ayan Shaikh";
+          setUserEmail(name.charAt(0).toUpperCase() + name.slice(1));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const toggle = () => {
@@ -69,116 +58,107 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-surface transition-all duration-300 md:flex",
-        collapsed ? "w-[72px]" : "w-[248px]"
+        "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-black/[0.06] bg-white/80 backdrop-blur-xl transition-all duration-300 md:flex",
+        collapsed ? "w-[76px]" : "w-[240px]"
       )}
     >
-      {/* Brand */}
-      <div className="flex items-center justify-between gap-2 border-b border-border-subtle px-4 py-4">
-        <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5" title="AdvertiseOS">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] font-display text-base font-bold text-white shadow-[0_6px_16px_-8px_rgba(37,99,235,0.6)]">
-            A
-          </span>
-          {!collapsed && (
-            <span className="min-w-0">
-              <span className="flex items-center gap-1.5">
-                <span className="font-display text-sm font-bold tracking-tight text-ink">AdvertiseOS</span>
-                <span className="rounded-full bg-brand-soft px-1.5 py-px text-[9px] font-bold text-[#1D4ED8]">AI</span>
-              </span>
-              <span className="block truncate text-[10px] text-muted">Marketing Agency OS</span>
-            </span>
-          )}
-        </Link>
+      {/* Brand Header */}
+      <div className="flex items-center justify-between gap-2 border-b border-black/[0.04] px-4 py-4">
+        <AdvertiseLogo collapsed={collapsed} showTagline={!collapsed} size="sm" />
         <button
           onClick={toggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#94A3B8] transition hover:bg-surface-2 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[#71717A] transition hover:bg-black/[0.04] hover:text-[#18181B]"
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
 
-      {/* Navigation */}
-      <nav aria-label="Workspace navigation" className="flex-1 space-y-4 overflow-y-auto px-2.5 py-3">
-        {GROUPS.map((g) => (
-          <div key={g.label}>
-            {!collapsed && (
-              <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">{g.label}</p>
-            )}
-            <ul className="space-y-0.5">
-              {g.items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
-                const Icon = item.icon;
-                const badge = item.href === "/approvals" ? (pending.data ?? 0) : undefined;
+      {/* Clean Navigation (Image 1 Style) */}
+      <nav aria-label="Workspace navigation" className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
+        <ul className="space-y-1.5">
+          {MAIN_NAV.map((item) => {
+            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+            const Icon = item.icon;
 
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      title={collapsed ? `${item.label} — ${item.hint}` : undefined}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-colors",
-                        isActive
-                          ? "bg-brand-soft font-semibold text-[#1D4ED8]"
-                          : "text-[#64748B] hover:bg-surface-2 hover:text-ink",
-                        collapsed && "justify-center px-0 py-2.5"
-                      )}
-                    >
-                      {isActive && <span className="absolute -left-2.5 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#2563EB]" />}
-                      <Icon size={17} className={cn("shrink-0", isActive ? "text-[#2563EB]" : "text-[#94A3B8] group-hover:text-ink transition-colors")} />
-                      {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-                      {!collapsed && badge !== undefined && badge > 0 && (
-                        <span className="rounded-full bg-[#2563EB] px-1.5 py-0.5 text-[10px] font-bold text-white">{badge}</span>
-                      )}
-                      {collapsed && badge !== undefined && badge > 0 && (
-                        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#2563EB]" aria-hidden />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-xs font-semibold transition-all duration-200",
+                    isActive
+                      ? "bg-[#18181B] text-white shadow-[0_4px_16px_-4px_rgba(24,24,27,0.35)]"
+                      : "text-[#71717A] hover:bg-black/[0.04] hover:text-[#18181B]",
+                    collapsed && "justify-center px-0 py-3"
+                  )}
+                >
+                  <Icon
+                    size={18}
+                    className={cn(
+                      "shrink-0 transition-transform duration-200 group-hover:scale-105",
+                      isActive ? "text-white" : "text-[#71717A] group-hover:text-[#18181B]"
+                    )}
+                  />
+                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && item.badge && (
+                    <span className="ml-auto rounded-full bg-[#8B5CF6]/15 px-2 py-0.5 text-[10px] font-bold text-[#7C3AED]">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      {/* Footer: real cost guardrail + sign out */}
-      <div className="space-y-2 border-t border-border-subtle p-3">
-        {!collapsed && (
-          <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-            <div className="flex items-center justify-between text-[11px] text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                <span>AI spend</span>
+      {/* Bottom User Profile Card (Matching Image 1) */}
+      <div className="border-t border-black/[0.04] p-3">
+        {!collapsed ? (
+          <div className="rounded-2xl border border-black/[0.05] bg-gradient-to-b from-[#FAF8F5] to-[#F5F2EE] p-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#F97316] via-[#EC4899] to-[#8B5CF6] text-xs font-bold text-white shadow-sm ring-2 ring-white">
+                {userEmail.slice(0, 1)}
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#10B981]" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold leading-tight text-[#18181B]">{userEmail}</p>
+                <p className="truncate text-[10px] font-medium text-[#71717A]">@ayan_agency · Owner</p>
+              </div>
+            </div>
+
+            <div className="mt-2.5 flex items-center justify-between gap-2 pt-2 border-t border-black/[0.04]">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#047857]">
+                <ShieldCheck size={11} /> Pro Active
               </span>
-              <span className="font-mono font-semibold text-ink">${cost.toFixed(2)} / ${limit}</span>
+              <Link
+                href="/login"
+                title="Sign out"
+                className="flex items-center gap-1 text-[10px] font-medium text-[#71717A] hover:text-[#DC2626] transition-colors"
+              >
+                <LogOut size={12} />
+                <span>Exit</span>
+              </Link>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e7e9ee]">
-              <div className="h-full rounded-full bg-[#2563EB] transition-all duration-500" style={{ width: `${Math.round(pct * 100)}%` }} />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#F97316] via-[#EC4899] to-[#8B5CF6] text-xs font-bold text-white shadow-sm ring-2 ring-white">
+              {userEmail.slice(0, 1)}
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-white bg-[#10B981]" />
             </div>
-            <p className="mt-1.5 text-[10px] text-[#94A3B8]">From persisted agent run costs</p>
+            <Link
+              href="/login"
+              title="Sign out"
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-[#71717A] hover:bg-black/[0.04] hover:text-[#DC2626] transition-colors"
+            >
+              <LogOut size={15} />
+            </Link>
           </div>
         )}
-
-        <div className="flex items-center justify-between px-1">
-          <Link
-            href="/login"
-            title="Sign out"
-            className={cn(
-              "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-[#64748B] transition hover:bg-surface-2 hover:text-ink",
-              collapsed && "w-full justify-center px-0"
-            )}
-          >
-            <LogOut size={15} />
-            {!collapsed && <span>Sign out</span>}
-          </Link>
-          {!collapsed && (
-            <span className="flex items-center gap-1 text-[10px] font-medium text-[#047857]">
-              <FileText size={12} /> Approval-gated
-            </span>
-          )}
-        </div>
       </div>
     </aside>
   );

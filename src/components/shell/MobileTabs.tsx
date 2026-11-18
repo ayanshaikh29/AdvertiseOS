@@ -3,16 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { CalendarDays, Inbox, LayoutDashboard, Menu, Sparkles, X } from "lucide-react";
+import { Home, Layers, Palette, Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { cn } from "@/lib/cn";
 
 const TABS = [
-  { href: "/dashboard", label: "AI", icon: <Sparkles size={20} /> },
-  { href: "/campaigns", label: "Projects", icon: <LayoutDashboard size={20} /> },
-  { href: "/approvals", label: "Review", icon: <Inbox size={20} /> },
-  { href: "/calendar", label: "Calendar", icon: <CalendarDays size={20} /> },
-  { href: "#more", label: "More", icon: <Menu size={20} /> },
+  { href: "/dashboard", label: "Home", icon: <Home size={20} /> },
+  { href: "/campaigns", label: "Studio", icon: <Layers size={20} /> },
+  { href: "/brand", label: "Brand", icon: <Palette size={20} /> },
+  { href: "#more", label: "Menu", icon: <Menu size={20} /> },
 ];
 
 export function MobileTabs() {
@@ -26,8 +25,8 @@ export function MobileTabs() {
 
   return (
     <>
-      <nav aria-label="Mobile" className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-[rgba(255,255,255,0.92)] pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md md:hidden">
-        <ul className="grid grid-cols-5">
+      <nav aria-label="Mobile" className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md md:hidden">
+        <ul className="grid grid-cols-4">
           {TABS.map((t) => {
             const active = pathname === t.href || (t.href !== "/dashboard" && pathname.startsWith(`${t.href}/`));
             if (t.href === "#more") {

@@ -1,33 +1,63 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, X, FileText, Image as ImageIcon, Square } from "lucide-react";
+import {
+  ArrowUp,
+  Paperclip,
+  X,
+  FileText,
+  Image as ImageIcon,
+  Square,
+  Sparkles,
+  SlidersHorizontal,
+  Mic,
+  Zap,
+} from "lucide-react";
 import type { ChatAttachment } from "@/types/chat";
+import { cn } from "@/lib/cn";
 
 interface ChatComposerProps {
   onSendMessage: (text: string, attachments: ChatAttachment[], campaignId?: string) => void;
   onStop: () => void;
   isLoading: boolean;
   disabled?: boolean;
+  initialValue?: string;
 }
 
 const PRESET_PROMPTS = [
   "Create a 30-day Instagram marketing strategy for a clothing brand",
+  "Create a 30-day lead generation campaign for IronCore Fitness Mumbai",
   "Analyze my top 5 competitors with source references",
-  "Create a Diwali promotional ad campaign with budget allocation",
+  "Create 4 viral Reels concepts with shot-by-shot visual breakdown",
   "Create an SEO strategy with keyword clusters and on-page checklist",
-  "Create 5 high-converting social media creatives",
-  "Improve the previous campaign based on performance results",
 ];
 
-export function ChatComposer({ onSendMessage, onStop, isLoading, disabled }: ChatComposerProps) {
-  const [input, setInput] = useState("");
+export function ChatComposer({
+  onSendMessage,
+  onStop,
+  isLoading,
+  disabled,
+  initialValue = "",
+}: ChatComposerProps) {
+  const [input, setInput] = useState(initialValue);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [showOptions, setShowOptions] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (initialValue) {
+      setInput(initialValue);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }
+  }, [initialValue]);
+
+  useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
     }
   }, [input]);
 
@@ -68,31 +98,48 @@ export function ChatComposer({ onSendMessage, onStop, isLoading, disabled }: Cha
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
-      {/* Preset prompt chips */}
-      <div className="mb-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs -webkit-overflow-scrolling-touch">
-        <span className="mr-1 shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">Suggested:</span>
-        {PRESET_PROMPTS.map((preset, i) => (
-          <button
-            key={i}
-            onClick={() => setInput(preset)}
-            className="shrink-0 rounded-full border border-border bg-surface px-3 py-1 text-xs text-[#475569] transition hover:border-[#bfdbfe] hover:bg-brand-soft hover:text-[#1D4ED8] active:scale-95"
-          >
-            {preset.slice(0, 48)}…
-          </button>
-        ))}
-      </div>
+    <div className="mx-auto w-full max-w-3xl">
+      {/* Optional Preset Prompts Drawer / Pills */}
+      {showOptions && (
+        <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs smooth-scroll animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <span className="mr-1 shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#A1A1AA]">
+            Templates:
+          </span>
+          {PRESET_PROMPTS.map((preset, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setInput(preset);
+                setShowOptions(false);
+              }}
+              className="shrink-0 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-xs text-[#27272A] shadow-xs transition hover:border-[#18181B] hover:bg-[#F5F2EF] active:scale-95"
+            >
+              {preset.slice(0, 44)}…
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Composer box */}
-      <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_3px_rgba(16,24,40,0.06)] transition-all focus-within:border-[#93c5fd] focus-within:ring-2 focus-within:ring-[#2563EB]/15">
+      {/* Floating Pill Composer Box (Image 1 Style) */}
+      <div className="rounded-[28px] border border-black/[0.08] bg-[#FAF8F5]/90 p-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl transition-all focus-within:border-black/25 focus-within:bg-white focus-within:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
         {attachments.length > 0 && (
-          <div className="flex flex-wrap gap-2 border-b border-border-subtle p-3">
+          <div className="mb-2 flex flex-wrap gap-2 border-b border-black/[0.05] pb-2.5">
             {attachments.map((att, idx) => (
-              <div key={idx} className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-xs text-[#334155]">
-                {att.type === "image" ? <ImageIcon size={14} className="text-[#7C3AED]" /> : <FileText size={14} className="text-[#2563EB]" />}
-                <span className="max-w-[160px] truncate">{att.name}</span>
-                <span className="font-mono text-[10px] text-muted">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ""}</span>
-                <button onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))} className="text-muted transition hover:text-[#DC2626]" aria-label={`Remove ${att.name}`}>
+              <div
+                key={idx}
+                className="flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white px-3 py-1 text-xs text-[#27272A] shadow-xs"
+              >
+                {att.type === "image" ? (
+                  <ImageIcon size={13} className="text-[#8B5CF6]" />
+                ) : (
+                  <FileText size={13} className="text-[#F97316]" />
+                )}
+                <span className="max-w-[150px] truncate font-medium">{att.name}</span>
+                <button
+                  onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                  className="text-[#A1A1AA] transition hover:text-red-600"
+                  aria-label={`Remove ${att.name}`}
+                >
                   <X size={12} />
                 </button>
               </div>
@@ -100,18 +147,8 @@ export function ChatComposer({ onSendMessage, onStop, isLoading, disabled }: Cha
           </div>
         )}
 
-        <div className="flex items-end gap-2.5 p-2.5 sm:p-3">
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple className="hidden" />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title="Attach brief, guidelines or brand images"
-            aria-label="Attach file"
-            className="inline-flex h-10 w-10 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface-hover hover:text-ink active:bg-surface-2"
-          >
-            <Paperclip size={18} />
-          </button>
-
+        {/* Input Textarea */}
+        <div className="px-2 pt-1">
           <textarea
             ref={textareaRef}
             value={input}
@@ -119,33 +156,86 @@ export function ChatComposer({ onSendMessage, onStop, isLoading, disabled }: Cha
             onKeyDown={handleKeyDown}
             rows={1}
             disabled={disabled}
-            placeholder="Instruct your AI Marketing Agency… (Enter to send)"
+            placeholder="+ Initiate a query or send a command to the AI..."
             aria-label="Message the agency team"
-            className="max-h-48 min-h-[40px] sm:min-h-[36px] flex-1 resize-none bg-transparent py-2 text-base sm:text-sm leading-relaxed text-ink placeholder:text-[#94A3B8] focus:outline-none"
+            className="max-h-40 min-h-[36px] w-full resize-none bg-transparent text-sm sm:text-base leading-relaxed text-[#18181B] placeholder:text-[#A1A1AA] focus:outline-none"
+          />
+        </div>
+
+        {/* Bottom Actions Row (Matching Image 1) */}
+        <div className="mt-2 flex items-center justify-between gap-2 pt-1">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            multiple
+            className="hidden"
           />
 
-          {isLoading ? (
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={onStop}
-              title="Stop generation"
-              aria-label="Stop generation"
-              className="inline-flex h-10 w-10 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-[#EF4444] text-white shadow-sm transition hover:bg-[#DC2626] active:scale-95"
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach media or brief"
+              className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-semibold text-[#52525B] shadow-2xs transition hover:bg-[#F5F2EF] hover:text-[#18181B] active:scale-95"
             >
-              <Square size={14} className="fill-current" />
+              <Paperclip size={13} />
+              <span>Attach</span>
             </button>
-          ) : (
+
             <button
               type="button"
-              onClick={() => handleSubmit()}
-              disabled={disabled || (!input.trim() && attachments.length === 0)}
-              title="Send instruction to agency"
-              aria-label="Send message"
-              className="inline-flex h-10 w-10 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-[0_4px_12px_-4px_rgba(37,99,235,0.6)] transition hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted disabled:shadow-none active:scale-95"
+              onClick={() => setShowOptions((v) => !v)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] px-3 py-1.5 text-xs font-semibold shadow-2xs transition active:scale-95",
+                showOptions
+                  ? "bg-[#18181B] text-white border-black"
+                  : "bg-white text-[#52525B] hover:bg-[#F5F2EF] hover:text-[#18181B]"
+              )}
             >
-              <Send size={15} />
+              <SlidersHorizontal size={12} />
+              <span>Options</span>
             </button>
-          )}
+
+            <button
+              type="button"
+              onClick={() => {
+                const sample =
+                  'Create a 30-day lead generation campaign for "IronCore Fitness", a premium gym in Mumbai (Andheri & Bandra). Details: - Campaign: 30-Day Monsoon Shred Challenge with certified trainers and customized nutrition plan - Target: Working professionals aged 24-45 looking for weight loss and functional strength - Goal: Generate 100+ inquiries for a 2-day free trial pass - Budget: ₹30,000 across Instagram & Facebook ads - Tone: Motivational, authoritative, no fake guarantees Required: 1. 12 Instagram feed posts with educational carousels 2. 4 viral Reels concepts with shot-by-shot visual breakdown 3. Full 30-day calendar 4. High-CTR Meta ad copies with audience targeting recommendations';
+                setInput(sample);
+              }}
+              title="Quick sample brief"
+              className="hidden sm:inline-flex items-center gap-1 rounded-full border border-black/[0.06] bg-white px-3 py-1.5 text-xs font-semibold text-[#52525B] shadow-2xs transition hover:bg-[#F5F2EF] hover:text-[#18181B]"
+            >
+              <Sparkles size={12} className="text-[#8B5CF6]" />
+              <span>Sample brief</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isLoading ? (
+              <button
+                type="button"
+                onClick={onStop}
+                title="Stop generation"
+                aria-label="Stop generation"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EF4444] text-white shadow-md transition hover:bg-[#DC2626] active:scale-95"
+              >
+                <Square size={14} className="fill-current" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSubmit()}
+                disabled={disabled || (!input.trim() && attachments.length === 0)}
+                title="Send instruction to agency"
+                aria-label="Send message"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#18181B] text-white shadow-[0_4px_12px_-2px_rgba(24,24,27,0.35)] transition-all hover:bg-black hover:scale-105 disabled:cursor-not-allowed disabled:bg-[#E4E4E7] disabled:text-[#A1A1AA] disabled:shadow-none active:scale-95"
+              >
+                <ArrowUp size={16} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

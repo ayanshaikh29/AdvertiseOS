@@ -15,9 +15,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "AdvertiseOS — Your entire marketing team. One command center.",
+  title: "AdvertiseOS — Create · Showcase · Grow",
   description:
-    "Private AI marketing agency system for digitaladvertise.in. Nothing is published or spent without human approval.",
+    "Private AI marketing agency system. Generate verified campaigns, content calendars, Reels & design briefs.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: "/icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
