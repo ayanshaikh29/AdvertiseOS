@@ -15,7 +15,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [palette, setPalette] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const isPublicPage = pathname === "/" || pathname === "/login";
+  const isPublicPage = !pathname || pathname === "/" || pathname === "/login";
   const isDashboard = pathname === "/dashboard";
 
   useEffect(() => {

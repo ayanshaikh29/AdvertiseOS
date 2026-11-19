@@ -1369,7 +1369,7 @@ export default function LandingPage() {
                     <div className="rounded-2xl border border-black/[0.06] bg-[#F8F6F4] p-4">
                       <span className="text-[10px] font-bold uppercase text-[#FB923C]">Week 2: Social Proof & Reel</span>
                       <h5 className="font-bold text-xs text-[#18181B] mt-1">Reel 1: 3-Second Visual Transformation</h5>
-                      <p className="text-[11px] text-[#71717A] mt-1">Hook: Don't sign up for a gym until you see this.</p>
+                      <p className="text-[11px] text-[#71717A] mt-1">Hook: Don&apos;t sign up for a gym until you see this.</p>
                     </div>
                     <div className="rounded-2xl border border-black/[0.06] bg-[#F8F6F4] p-4">
                       <span className="text-[10px] font-bold uppercase text-[#10B981]">Week 3-4: Direct Inquiries</span>
@@ -1410,7 +1410,7 @@ export default function LandingPage() {
                       </div>
                       <h5 className="font-bold text-xs text-[#18181B] mt-2">The Monsoon Fitness Blueprint</h5>
                       <p className="text-[11px] text-[#71717A] mt-1">
-                        Caption Angle: "Desk job ruining your spine? 3 daily compound lifts to rebuild functional strength."
+                        Caption Angle: &ldquo;Desk job ruining your spine? 3 daily compound lifts to rebuild functional strength.&rdquo;
                       </p>
                     </div>
 
@@ -1421,7 +1421,7 @@ export default function LandingPage() {
                       </div>
                       <h5 className="font-bold text-xs text-[#18181B] mt-2">Zero-Fluff Trial Pass Offer</h5>
                       <p className="text-[11px] text-[#71717A] mt-1">
-                        Caption Angle: "2 days to test our certified trainers and customized nutrition roadmap free."
+                        Caption Angle: &ldquo;2 days to test our certified trainers and customized nutrition roadmap free.&rdquo;
                       </p>
                     </div>
                   </div>
@@ -1453,7 +1453,7 @@ export default function LandingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div className="rounded-2xl border border-black/[0.06] bg-[#F8F6F4] p-4">
                       <span className="text-[11px] font-bold text-[#EC4899]">Reel #1 · The 3-Second Hook</span>
-                      <p className="text-xs font-bold text-[#18181B] mt-1">"Why your 10,000 steps aren't burning fat."</p>
+                      <p className="text-xs font-bold text-[#18181B] mt-1">&ldquo;Why your 10,000 steps aren&apos;t burning fat.&rdquo;</p>
                       <p className="text-[11px] text-[#71717A] mt-2">
                         Visual Breakdown: Trainer drops a 20kg barbell, points to the camera, and reveals the cortisol plateau curve.
                       </p>
@@ -1461,7 +1461,7 @@ export default function LandingPage() {
 
                     <div className="rounded-2xl border border-black/[0.06] bg-[#F8F6F4] p-4">
                       <span className="text-[11px] font-bold text-[#EC4899]">Reel #2 · Day-In-The-Life Cut</span>
-                      <p className="text-xs font-bold text-[#18181B] mt-1">"From Bandra traffic to evening energy."</p>
+                      <p className="text-xs font-bold text-[#18181B] mt-1">&ldquo;From Bandra traffic to evening energy.&rdquo;</p>
                       <p className="text-[11px] text-[#71717A] mt-2">
                         Visual Breakdown: Fast cuts of working professional entering the studio, customized hydration, and post-session stretch.
                       </p>

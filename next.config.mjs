@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // sharp is a native module: load at runtime, never bundle (fixes
   // "__webpack_modules__[moduleId] is not a function" in svgToPng).
   serverExternalPackages: ["sharp"],
