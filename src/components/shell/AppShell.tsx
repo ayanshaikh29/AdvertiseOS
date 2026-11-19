@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/cn";
 import { PillNav } from "@/components/PillNav";
 import { QueryProvider } from "@/components/QueryProvider";
 import { Sidebar } from "@/components/shell/Sidebar";
@@ -13,29 +14,65 @@ import { Toaster } from "@/components/ui/toast";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [palette, setPalette] = useState(false);
-  const isLoginPage = pathname === "/login";
-  const isDashboard = pathname === "/dashboard" || pathname === "/";
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isPublicPage = pathname === "/" || pathname === "/login";
+  const isDashboard = pathname === "/dashboard";
 
-  if (isLoginPage) {
+  useEffect(() => {
+    setSidebarCollapsed(localStorage.getItem("advos-rail") === "1");
+
+    const handleToggle = (e: Event) => {
+      const detail = (e as CustomEvent<{ collapsed: boolean }>).detail;
+      if (typeof detail?.collapsed === "boolean") {
+        setSidebarCollapsed(detail.collapsed);
+      } else {
+        setSidebarCollapsed(localStorage.getItem("advos-rail") === "1");
+      }
+    };
+
+    window.addEventListener("advos-sidebar-toggle", handleToggle);
+    return () => window.removeEventListener("advos-sidebar-toggle", handleToggle);
+  }, []);
+
+  // Public Landing Page and Login Page: Standalone full-width layout without app sidebar or shell clutter
+  if (isPublicPage) {
     return (
-      <div className="min-h-screen bg-bg text-ink antialiased">
-        <PillNav />
-        <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-24 sm:px-6">{children}</main>
-      </div>
+      <QueryProvider>
+        <div className="min-h-screen bg-bg text-ink antialiased">
+          {children}
+          <Toaster />
+        </div>
+      </QueryProvider>
     );
   }
 
   return (
     <QueryProvider>
-      <div className="flex min-h-screen bg-bg text-ink antialiased">
+      <div
+        className={cn(
+          "flex bg-bg text-ink antialiased",
+          isDashboard ? "h-screen h-[100dvh] max-h-screen overflow-hidden" : "min-h-screen"
+        )}
+      >
         <Sidebar />
 
-        <div className="flex min-w-0 flex-1 flex-col transition-all duration-300 md:pl-[240px]">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col transition-all duration-300",
+            sidebarCollapsed ? "md:pl-[76px]" : "md:pl-[240px]",
+            isDashboard && "h-screen h-[100dvh] max-h-screen overflow-hidden"
+          )}
+        >
           <Topbar onPalette={() => setPalette(true)} />
 
           <main
             id="main"
-            className={`w-full flex-1 ${isDashboard ? "h-[100dvh] p-2 sm:p-3 md:p-4 overflow-hidden" : "mx-auto max-w-7xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-4 sm:px-6 md:pb-6"}`}
+            className={cn(
+              "w-full flex-1 min-h-0",
+              isDashboard
+                ? "h-full max-h-full p-2 sm:p-3 md:p-4 overflow-hidden"
+                : "mx-auto max-w-7xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-4 sm:px-6 md:pb-6"
+            )}
           >
             {children}
           </main>

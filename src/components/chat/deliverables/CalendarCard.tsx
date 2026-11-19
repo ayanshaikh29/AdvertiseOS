@@ -102,7 +102,7 @@ export function CalendarCard({ data }: { data: DeliverableCalendar }) {
           <button onClick={exportCSV} className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-[#334155] transition hover:bg-surface-hover">
             <Download size={13} /> CSV
           </button>
-          <Link href="/calendar" className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#1D4ED8]">
+          <Link href="/calendar" className="flex items-center gap-1.5 rounded-xl bg-[#18181B] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#27272A]">
             Open calendar <ExternalLink size={12} />
           </Link>
         </div>
@@ -121,16 +121,16 @@ export function CalendarCard({ data }: { data: DeliverableCalendar }) {
                   return (
                     <div
                       key={day}
-                      className={`min-h-[64px] rounded-lg border p-1.5 text-[10px] ${items.length ? "border-[#bfdbfe] bg-brand-soft" : "border-border-subtle bg-[#fafbfc]"}`}
+                      className={`min-h-[64px] rounded-lg border p-1.5 text-[10px] ${items.length ? "border-black/[0.08] bg-[#F5F2EF]" : "border-border-subtle bg-[#fafbfc]"}`}
                       title={items.map((i) => i.topic).join("\n") || undefined}
                     >
-                      <span className={`font-mono font-bold ${items.length ? "text-[#1D4ED8]" : "text-[#CBD5E1]"}`}>{day}</span>
+                      <span className={`font-mono font-bold ${items.length ? "text-[#18181B]" : "text-[#CBD5E1]"}`}>{day}</span>
                       {items.slice(0, 2).map((it, idx) => (
-                        <p key={idx} className="mt-0.5 truncate rounded bg-white/80 px-1 font-medium text-[#475569]">
+                        <p key={idx} className="mt-0.5 truncate rounded bg-white px-1 font-medium text-[#475569] border border-black/[0.04]">
                           {it.topic}
                         </p>
                       ))}
-                      {items.length > 2 && <p className="mt-0.5 px-1 font-bold text-[#1D4ED8]">+{items.length - 2}</p>}
+                      {items.length > 2 && <p className="mt-0.5 px-1 font-bold text-[#8B5CF6]">+{items.length - 2}</p>}
                     </div>
                   );
                 })}

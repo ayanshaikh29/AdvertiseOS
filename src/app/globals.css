@@ -21,8 +21,8 @@
   --primary-hover: #27272A;
   --primary-soft: #F4F1EE;
   --primary-glow: rgba(24, 24, 27, 0.08);
-  --blue: #2563eb;
-  --blue-soft: #eff6ff;
+  --blue: #18181B;
+  --blue-soft: #F5F2EF;
   --indigo: #4f46e5;
   --accent-cyan: #0891b2;
   --accent-emerald: #059669;
@@ -143,7 +143,7 @@ h4,
 }
 .btn-luxury-primary {
   padding: 0.625rem 1.25rem;
-  box-shadow: 0 6px 16px -8px rgba(37, 99, 235, 0.6);
+  box-shadow: 0 6px 16px -8px rgba(24, 24, 27, 0.4);
 }
 .btn-luxury-primary:hover,
 .btn-primary:hover {
@@ -212,9 +212,9 @@ h4,
   border: 1px solid #fecaca;
 }
 .tint-info {
-  background: var(--primary-soft);
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background: #F5F2EF;
+  color: #18181B;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .tint-neutral {
   background: #f8fafc;

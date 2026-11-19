@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import type { DeliverableOverview } from "@/types/chat";
 import { MapPin, DollarSign, Calendar, Film, Image as ImageIcon, CheckCircle, Sparkles, AlertCircle, Users, Target } from "lucide-react";
 
@@ -7,11 +8,17 @@ export function OverviewCard({ data }: { data: DeliverableOverview }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_3px_rgba(16,24,40,0.05)]">
-      <div className="border-b border-border-subtle bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-white px-5 py-4">
+      <div className="border-b border-border-subtle bg-gradient-to-r from-[#FFF7ED]/70 via-[#FDF2F8]/40 to-white px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-[0_6px_16px_-8px_rgba(37,99,235,0.5)]">
-              <Sparkles size={18} />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-black/[0.06] bg-gradient-to-tr from-[#FFF7ED] via-[#FDF2F8] to-[#F5F3FF] p-1 shadow-2xs">
+              <Image
+                src="/logo-emblem-transparent.png"
+                alt="Emblem"
+                width={22}
+                height={22}
+                className="object-contain"
+              />
             </span>
             <div>
               <h3 className="font-display text-lg font-extrabold tracking-tight text-ink">
@@ -20,7 +27,7 @@ export function OverviewCard({ data }: { data: DeliverableOverview }) {
               <p className="mt-0.5 text-sm text-muted">Your campaign plan is being built</p>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#475569]">
                 <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 border border-border">
-                  <MapPin size={12} className="text-[#2563EB]" /> {data.location}
+                  <MapPin size={12} className="text-[#F97316]" /> {data.location}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 border border-border">
                   <Target size={12} className="text-[#7C3AED]" /> {data.priceRange}
@@ -54,7 +61,7 @@ export function OverviewCard({ data }: { data: DeliverableOverview }) {
 
       <div className="grid grid-cols-2 divide-x divide-y border-b border-border-subtle bg-[#fafbfc] sm:grid-cols-4 sm:divide-y-0">
         <div className="p-4 text-center">
-          <ImageIcon size={18} className="mx-auto text-[#2563EB]" />
+          <ImageIcon size={18} className="mx-auto text-[#8B5CF6]" />
           <div className="mt-1.5 font-display text-3xl font-black text-ink">{d.postsCount}</div>
           <div className="text-xs font-semibold text-muted">Posts</div>
         </div>
@@ -77,13 +84,13 @@ export function OverviewCard({ data }: { data: DeliverableOverview }) {
 
       <div className="p-5">
         <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted">
-          <Sparkles size={13} className="text-[#2563EB]" />
+          <Sparkles size={13} className="text-[#8B5CF6]" />
           Everything included in this package
         </h4>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {data.additionalDeliverables.map((item, idx) => (
             <div key={idx} className="flex items-start gap-2.5 rounded-xl border border-border bg-[#fafbfc] px-3.5 py-2.5 text-sm text-[#1e293b]">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-[#2563EB]">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F5F2EF] text-[11px] font-bold text-[#18181B]">
                 ✓
               </span>
               <span>{item}</span>
@@ -92,12 +99,12 @@ export function OverviewCard({ data }: { data: DeliverableOverview }) {
         </div>
 
         {data.objectives.length > 0 && (
-          <div className="mt-4 rounded-xl border border-border bg-brand-soft/50 p-3.5">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#1D4ED8]">Campaign goals</p>
+          <div className="mt-4 rounded-xl border border-border bg-[#F5F2EF] p-3.5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#18181B]">Campaign goals</p>
             <ul className="mt-1.5 space-y-1 text-sm text-[#1e293b]">
               {data.objectives.map((o, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2563EB]" />
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#18181B]" />
                   {o}
                 </li>
               ))}

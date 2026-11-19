@@ -18,7 +18,7 @@ export function AuditCard({ data }: { data: DeliverableAudit }) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-[#2563EB]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F5F2EF] text-[#18181B]">
             <ShieldCheck size={18} />
           </span>
           <div className="min-w-0">
@@ -35,7 +35,7 @@ export function AuditCard({ data }: { data: DeliverableAudit }) {
 
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-3 py-1 text-xs">
-            <Award size={14} className="text-[#2563EB]" />
+            <Award size={14} className="text-[#8B5CF6]" />
             <span className="font-mono text-sm font-bold text-ink">{data.score}</span>
             <span className="text-[10px] font-normal text-muted">/100</span>
           </div>
@@ -88,12 +88,12 @@ export function AuditCard({ data }: { data: DeliverableAudit }) {
               </ul>
             </div>
 
-            <div className="rounded-xl border border-[#bfdbfe] bg-brand-soft p-3">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1D4ED8]">
-                <Lightbulb size={13} />
+            <div className="rounded-xl border border-black/[0.08] bg-[#F5F2EF] p-3">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#18181B]">
+                <Lightbulb size={13} className="text-[#F97316]" />
                 <span>Recommended next</span>
               </div>
-              <ul className="mt-2 space-y-1.5 text-xs text-[#1E40AF]">
+              <ul className="mt-2 space-y-1.5 text-xs text-[#18181B]">
                 {data.recommendations.map((r, idx) => (
                   <li key={idx} className="flex items-start gap-1.5 leading-snug">
                     <span className="font-bold">→</span>

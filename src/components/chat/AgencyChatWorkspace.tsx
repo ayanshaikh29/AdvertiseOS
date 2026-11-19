@@ -20,8 +20,11 @@ import {
   Wand2,
   Palette,
   Image as ImageIcon,
+  Edit3,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { deriveConversationTitle } from "@/lib/chat/titleExtractor";
 
 export function AgencyChatWorkspace() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -35,6 +38,8 @@ export function AgencyChatWorkspace() {
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [composerPreset, setComposerPreset] = useState("");
+  const [headerEditing, setHeaderEditing] = useState(false);
+  const [headerTitle, setHeaderTitle] = useState("");
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -198,6 +203,18 @@ export function AgencyChatWorkspace() {
     if ((!text.trim() && attachments.length === 0) || isLoading) return;
     setIsLoading(true);
 
+    const smartTitle = deriveConversationTitle(text);
+    if (activeConversationId) {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConversationId &&
+          (c.title === "New Agency Task" || c.title === "New Strategy Brief" || !c.title)
+            ? { ...c, title: smartTitle }
+            : c
+        )
+      );
+    }
+
     const userMsgId = `msg-user-${Date.now()}`;
     const userMessage: ChatMessage = {
       id: userMsgId,
@@ -273,7 +290,29 @@ export function AgencyChatWorkspace() {
             const data = JSON.parse(dataStr);
 
             if (event === "init" && data.conversationId) {
-              setActiveConversationId(data.conversationId);
+              const targetId = String(data.conversationId);
+              setActiveConversationId(targetId);
+              if (data.title) {
+                setConversations((prev) => {
+                  const exists = prev.some((c) => c.id === targetId);
+                  if (exists) {
+                    return prev.map((c) =>
+                      c.id === targetId ? { ...c, title: String(data.title) } : c
+                    );
+                  }
+                  const newConv: Conversation = {
+                    id: targetId,
+                    brandId: targetBrandId,
+                    title: String(data.title),
+                    lastMessage: text.slice(0, 80),
+                    messageCount: 1,
+                    status: "active",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  };
+                  return [newConv, ...prev];
+                });
+              }
             }
 
             setMessages((prev) =>
@@ -353,24 +392,89 @@ export function AgencyChatWorkspace() {
       .reverse()
       .find((m) => m.role === "assistant" && m.agentActivities?.length)?.agentActivities || [];
 
+  const startHeaderRename = () => {
+    if (!activeConversation) return;
+    setHeaderTitle(activeConversation.title);
+    setHeaderEditing(true);
+  };
+
+  const saveHeaderRename = () => {
+    if (activeConversation && headerTitle.trim()) {
+      handleRenameConversation(activeConversation.id, headerTitle.trim());
+    }
+    setHeaderEditing(false);
+  };
+
   return (
-    <div className="relative flex h-full w-full gap-3 sm:gap-4 overflow-hidden">
+    <div className="relative flex h-full w-full min-h-0 gap-3 sm:gap-4 overflow-hidden">
       {/* ── Center Stage: AI Workspace Canvas (Matching Image 1) ───────────────── */}
-      <div className="relative flex min-w-0 flex-1 flex-col rounded-3xl border border-black/[0.06] bg-white/80 p-3 sm:p-5 shadow-xs backdrop-blur-xl overflow-hidden">
-        {/* Subtle Top Utility Bar */}
-        <div className="flex items-center justify-between pb-2 sm:pb-3 border-b border-black/[0.04]">
+      <div className="relative flex min-w-0 min-h-0 flex-1 flex-col rounded-3xl border border-black/[0.06] bg-white/80 p-3 sm:p-5 shadow-xs backdrop-blur-xl overflow-hidden">
+        {/* Subtle Top Utility Bar (Pinned Static) */}
+        <div className="shrink-0 flex items-center justify-between pb-2 sm:pb-3 border-b border-black/[0.04]">
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#F5F2EF] text-[#8B5CF6]">
-              <Sparkles size={14} />
+            <span className="flex h-7 w-7 items-center justify-center rounded-xl border border-black/[0.06] bg-gradient-to-tr from-[#FFF7ED] via-[#FDF2F8] to-[#F5F3FF] p-1 shadow-2xs">
+              <Image
+                src="/logo-emblem-transparent.png"
+                alt="AdvertiseOS"
+                width={18}
+                height={18}
+                className="object-contain"
+              />
             </span>
-            <div className="flex items-center gap-2">
-              <span className="font-display text-xs font-bold text-[#18181B] truncate max-w-[200px] sm:max-w-xs">
-                {activeConversation?.title || "AdvertiseOS Marketing Studio"}
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                <ShieldCheck size={11} /> Approval Gated
-              </span>
-            </div>
+            {headerEditing && activeConversation ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={headerTitle}
+                  onChange={(e) => setHeaderTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveHeaderRename();
+                    if (e.key === "Escape") setHeaderEditing(false);
+                  }}
+                  className="rounded-lg border border-black/[0.2] bg-white px-2 py-0.5 text-xs font-bold text-[#18181B] focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] focus:outline-none max-w-[200px]"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={saveHeaderRename}
+                  className="rounded-md p-1 text-emerald-600 hover:bg-emerald-50 transition"
+                  title="Save title"
+                >
+                  <Check size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeaderEditing(false)}
+                  className="rounded-md p-1 text-zinc-400 hover:bg-zinc-100 transition"
+                  title="Cancel"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-center gap-1.5">
+                <span
+                  onDoubleClick={startHeaderRename}
+                  title="Double-click to rename"
+                  className="font-display text-xs font-bold text-[#18181B] truncate max-w-[200px] sm:max-w-xs cursor-pointer select-none"
+                >
+                  {activeConversation?.title || "New Agency Task"}
+                </span>
+                {activeConversation && (
+                  <button
+                    type="button"
+                    onClick={startHeaderRename}
+                    title="Rename this conversation"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-400 hover:text-zinc-800 transition"
+                  >
+                    <Edit3 size={11} />
+                  </button>
+                )}
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  <ShieldCheck size={11} /> Approval Gated
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -394,8 +498,8 @@ export function AgencyChatWorkspace() {
           </div>
         </div>
 
-        {/* Center Content Stream / Empty State */}
-        <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-1 py-4 sm:px-4 smooth-scroll flex flex-col">
+        {/* Center Content Stream / Empty State (ONLY THIS SCROLLS) */}
+        <div ref={chatScrollRef} className="flex-1 min-h-0 overflow-y-auto px-1 py-4 sm:px-4 smooth-scroll flex flex-col">
           {messages.length === 0 ? (
             <div className="mx-auto my-auto flex w-full max-w-2xl flex-col items-center justify-center py-6 sm:py-8 text-center select-none">
               {/* Floating Animated Crystal Star Emblem (Matching Image 1 & 3) */}
@@ -551,9 +655,9 @@ export function AgencyChatWorkspace() {
           )}
         </div>
 
-        {/* Floating Composer at Bottom (When in Active Conversation) */}
+        {/* Floating Composer at Bottom (Pinned Static In Active Conversation) */}
         {messages.length > 0 && (
-          <div className="pt-2">
+          <div className="shrink-0 pt-3 border-t border-black/[0.04] bg-white/40 backdrop-blur-md">
             <ChatComposer
               onSendMessage={handleSendMessage}
               onStop={handleStop}
@@ -567,7 +671,7 @@ export function AgencyChatWorkspace() {
 
       {/* ── Right Column: Chat History & Live Ledger (Matching Image 1) ───────── */}
       {rightPanelOpen && (
-        <aside className="hidden xl:flex w-[320px] shrink-0 flex-col overflow-hidden">
+        <aside className="hidden xl:flex w-[320px] shrink-0 flex-col overflow-hidden h-full min-h-0">
           {rightPanelTab === "history" ? (
             <ChatHistoryPanel
               conversations={conversations}
@@ -581,8 +685,8 @@ export function AgencyChatWorkspace() {
               onTabChange={setRightPanelTab}
             />
           ) : (
-            <div className="flex h-full flex-col rounded-3xl border border-black/[0.06] bg-white/90 p-4 shadow-sm backdrop-blur-xl">
-              <div className="flex items-center justify-between pb-3 border-b border-black/[0.05]">
+            <div className="flex h-full flex-col rounded-3xl border border-black/[0.06] bg-white/90 p-4 shadow-sm backdrop-blur-xl min-h-0 overflow-hidden">
+              <div className="shrink-0 flex items-center justify-between pb-3 border-b border-black/[0.05]">
                 <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#F5F2EF]">
                   <button
                     onClick={() => setRightPanelTab("history")}
@@ -598,7 +702,7 @@ export function AgencyChatWorkspace() {
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto pt-3">
+              <div className="flex-1 min-h-0 overflow-y-auto pt-3">
                 <TeamPanel activities={teamActivities} onClose={() => setRightPanelTab("history")} />
               </div>
             </div>

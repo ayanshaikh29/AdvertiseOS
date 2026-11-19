@@ -4,6 +4,7 @@ import { ChatStore } from "@/lib/db/chatStore";
 import { runAgencyOrchestration, type OrchestrationEvent } from "@/lib/agents/orchestrator";
 import type { AgentActivity, Deliverable } from "@/types/chat";
 import { SAMPLE_BRAND, type BrandProfile } from "@/lib/brand";
+import { deriveConversationTitle } from "@/lib/chat/titleExtractor";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -55,16 +56,27 @@ export async function POST(req: Request) {
     }
   }
 
-  // One conversation key for both the record and its messages (fixes the old
-  // createConversation/actualConvId mismatch that orphaned messages).
-  const actualConvId =
-    conversationId || ChatStore.createConversation(currentBrand.id, instruction.slice(0, 45)).id;
+  // Derive smart business / task title from the user instruction (e.g. "Curry Leaves", "Urban Threads")
+  const smartTitle = deriveConversationTitle(instruction);
+
+  // One conversation key for both the record and its messages.
+  let actualConvId = conversationId;
+  if (!actualConvId) {
+    actualConvId = ChatStore.createConversation(currentBrand.id, smartTitle).id;
+  } else {
+    // If conversation had default title ("New Agency Task" or "New Strategy Brief"), update it with the smart task title
+    const existing = ChatStore.getConversation(actualConvId);
+    if (!existing || existing.title === "New Agency Task" || existing.title === "New Strategy Brief" || !existing.title) {
+      ChatStore.updateConversation(actualConvId, { title: smartTitle, brandId: currentBrand.id });
+    }
+  }
+
   ChatStore.addMessage(actualConvId, {
     role: "user",
     content: instruction,
     attachments,
   });
-  // addMessage may have recreated a placeholder with brandId "default" — stamp the real brand.
+  // Stamp the real brand and smart title
   ChatStore.updateConversation(actualConvId, { brandId: currentBrand.id });
 
   // 2. Prepare assistant placeholder
@@ -97,7 +109,11 @@ export async function POST(req: Request) {
     const deliverablesList: Deliverable[] = [];
 
     try {
-      await sendEvent("init", { conversationId: actualConvId, assistantMessageId: assistantMsg.id });
+      await sendEvent("init", {
+        conversationId: actualConvId,
+        assistantMessageId: assistantMsg.id,
+        title: smartTitle,
+      });
 
       await runAgencyOrchestration({
         instruction: instruction + projectNote,

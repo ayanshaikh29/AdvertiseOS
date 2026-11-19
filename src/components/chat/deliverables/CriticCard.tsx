@@ -61,7 +61,7 @@ export function CriticCard({ data }: { data: DeliverableCritic }) {
             <div key={idx} className="rounded-xl border border-border bg-[#FAFCFF] p-3">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-ink">{crit.name}</span>
-                <span className="font-mono font-bold text-xs text-[#2563EB]">{crit.score}/100</span>
+                <span className="font-mono font-bold text-xs text-[#8B5CF6]">{crit.score}/100</span>
               </div>
               <p className="mt-1 text-[11px] text-muted leading-relaxed">{crit.feedback}</p>
             </div>

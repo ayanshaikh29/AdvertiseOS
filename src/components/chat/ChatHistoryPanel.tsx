@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Flame,
   CheckCircle2,
+  Check,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -82,12 +84,12 @@ export function ChatHistoryPanel({
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col rounded-3xl border border-black/[0.06] bg-white/90 p-4 shadow-sm backdrop-blur-xl",
+        "flex h-full w-full flex-col rounded-3xl border border-black/[0.06] bg-white/90 p-4 shadow-sm backdrop-blur-xl min-h-0 overflow-hidden",
         className
       )}
     >
-      {/* Top Header / Tabs */}
-      <div className="flex items-center justify-between pb-3 border-b border-black/[0.05]">
+      {/* Top Header / Tabs (Pinned Static) */}
+      <div className="shrink-0 flex items-center justify-between pb-3 border-b border-black/[0.05]">
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#F5F2EF]">
           <button
             onClick={() => onTabChange?.("history")}
@@ -121,8 +123,8 @@ export function ChatHistoryPanel({
         </span>
       </div>
 
-      {/* Search Input (Matching Image 1) */}
-      <div className="pt-3 pb-2">
+      {/* Search Input (Pinned Static) */}
+      <div className="shrink-0 pt-3 pb-2">
         <div className="relative">
           <Search size={14} className="absolute left-3 top-3 text-[#A1A1AA]" />
           <input
@@ -135,8 +137,8 @@ export function ChatHistoryPanel({
         </div>
       </div>
 
-      {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto space-y-2 py-2 pr-1 smooth-scroll">
+      {/* Conversation List (Scrolls independently) */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 py-2 pr-1 smooth-scroll">
         {filteredConversations.length === 0 ? (
           <div className="py-12 text-center text-xs text-[#A1A1AA]">
             {searchQuery ? "No matching chats" : "No chats yet. Start a new task below!"}
@@ -181,21 +183,44 @@ export function ChatHistoryPanel({
                     </span>
 
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") saveRename(conv.id);
-                          if (e.key === "Escape") setEditingId(null);
-                        }}
-                        className="w-full rounded-lg border border-black bg-white px-2 py-0.5 text-xs font-semibold focus:outline-none"
-                        autoFocus
-                      />
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 flex-1 min-w-0"
+                      >
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveRename(conv.id);
+                            if (e.key === "Escape") setEditingId(null);
+                          }}
+                          className="w-full rounded-lg border border-black/[0.2] bg-white px-2 py-0.5 text-xs font-semibold text-[#18181B] focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveRename(conv.id)}
+                          className="rounded-md p-1 text-emerald-600 hover:bg-emerald-50 transition"
+                          title="Save title"
+                        >
+                          <Check size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          className="rounded-md p-1 text-zinc-400 hover:bg-zinc-100 transition"
+                          title="Cancel"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
                     ) : (
                       <h4
+                        onDoubleClick={(e) => startRename(conv, e)}
+                        title="Double-click to rename"
                         className={cn(
-                          "truncate text-xs font-bold leading-tight",
+                          "truncate text-xs font-bold leading-tight select-none",
                           isActive ? "text-[#18181B]" : "text-[#27272A]"
                         )}
                       >
@@ -215,34 +240,36 @@ export function ChatHistoryPanel({
                   </p>
                 )}
 
-                {/* Hover Action Buttons */}
-                <div className="absolute right-2.5 bottom-2.5 hidden items-center gap-1 group-hover:flex">
-                  <button
-                    onClick={(e) => startRename(conv, e)}
-                    title="Rename"
-                    className="rounded-lg p-1 text-[#A1A1AA] hover:bg-white hover:text-[#18181B]"
-                  >
-                    <Edit3 size={11} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteConversation(conv.id);
-                    }}
-                    title="Delete"
-                    className="rounded-lg p-1 text-[#A1A1AA] hover:bg-white hover:text-red-600"
-                  >
-                    <Trash2 size={11} />
-                  </button>
-                </div>
+                {/* Action Buttons */}
+                {!isEditing && (
+                  <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => startRename(conv, e)}
+                      title="Rename conversation"
+                      className="rounded-lg p-1 text-[#A1A1AA] hover:bg-white hover:text-[#18181B] transition-colors"
+                    >
+                      <Edit3 size={12} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteConversation(conv.id);
+                      }}
+                      title="Delete conversation"
+                      className="rounded-lg p-1 text-[#A1A1AA] hover:bg-white hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
         )}
       </div>
 
-      {/* Bottom Button: "+ Create new chat" (Matching Image 1) */}
-      <div className="pt-3 border-t border-black/[0.05]">
+      {/* Bottom Button: "+ Create new chat" (Pinned Static at Bottom) */}
+      <div className="shrink-0 pt-3 border-t border-black/[0.05]">
         <button
           onClick={onNewConversation}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#18181B] py-3 text-xs font-bold text-white shadow-[0_4px_14px_-2px_rgba(24,24,27,0.35)] transition-all hover:bg-black hover:shadow-lg active:scale-98"

@@ -69,7 +69,7 @@ export function SummaryCard({ data, campaignId }: { data: DeliverableSummary; ca
           <ol className="mt-2 space-y-2 text-sm text-[#334155]">
             {data.recommendedNextSteps.map((pt, i) => (
               <li key={i} className="flex items-start gap-2.5">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[11px] font-bold text-[#1D4ED8]">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#18181B] text-[11px] font-bold text-white">
                   {i + 1}
                 </span>
                 <span>{pt}</span>
@@ -101,7 +101,7 @@ export function SummaryCard({ data, campaignId }: { data: DeliverableSummary; ca
           )}
           <Link
             href="/approvals"
-            className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_16px_-8px_rgba(37,99,235,0.6)] transition hover:bg-[#1D4ED8]"
+            className="flex items-center gap-1.5 rounded-xl bg-[#18181B] px-4 py-2 text-sm font-bold text-white shadow-xs transition hover:bg-[#27272A]"
           >
             Review & approve <ArrowRight size={15} />
           </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -32,8 +32,19 @@ const MAIN_NAV: CleanNavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [userEmail, setUserEmail] = useState("Ayan Shaikh");
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    router.push("/login");
+    router.refresh();
+  };
 
   useEffect(() => {
     setCollapsed(localStorage.getItem("advos-rail") === "1");
@@ -50,8 +61,12 @@ export function Sidebar() {
 
   const toggle = () => {
     setCollapsed((c) => {
-      localStorage.setItem("advos-rail", c ? "0" : "1");
-      return !c;
+      const next = !c;
+      localStorage.setItem("advos-rail", next ? "1" : "0");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("advos-sidebar-toggle", { detail: { collapsed: next } }));
+      }
+      return next;
     });
   };
 
@@ -62,16 +77,33 @@ export function Sidebar() {
         collapsed ? "w-[76px]" : "w-[240px]"
       )}
     >
+      {/* Floating Edge Toggle Button (Always visible on rail border) */}
+      <button
+        onClick={toggle}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="absolute -right-3 top-5 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-black/[0.08] bg-white text-[#71717A] shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition hover:scale-110 hover:bg-[#F8F6F4] hover:text-[#18181B]"
+      >
+        {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+      </button>
+
       {/* Brand Header */}
-      <div className="flex items-center justify-between gap-2 border-b border-black/[0.04] px-4 py-4">
+      <div
+        className={cn(
+          "flex items-center border-b border-black/[0.04] py-4 transition-all",
+          collapsed ? "justify-center px-2" : "justify-between gap-2 px-4"
+        )}
+      >
         <AdvertiseLogo collapsed={collapsed} showTagline={!collapsed} size="sm" />
-        <button
-          onClick={toggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[#71717A] transition hover:bg-black/[0.04] hover:text-[#18181B]"
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+        {!collapsed && (
+          <button
+            onClick={toggle}
+            aria-label="Collapse sidebar"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[#71717A] transition hover:bg-black/[0.04] hover:text-[#18181B]"
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
       </div>
 
       {/* Clean Navigation (Image 1 Style) */}
@@ -134,14 +166,14 @@ export function Sidebar() {
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#047857]">
                 <ShieldCheck size={11} /> Pro Active
               </span>
-              <Link
-                href="/login"
+              <button
+                onClick={handleLogout}
                 title="Sign out"
                 className="flex items-center gap-1 text-[10px] font-medium text-[#71717A] hover:text-[#DC2626] transition-colors"
               >
                 <LogOut size={12} />
                 <span>Exit</span>
-              </Link>
+              </button>
             </div>
           </div>
         ) : (
@@ -150,13 +182,13 @@ export function Sidebar() {
               {userEmail.slice(0, 1)}
               <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border-2 border-white bg-[#10B981]" />
             </div>
-            <Link
-              href="/login"
+            <button
+              onClick={handleLogout}
               title="Sign out"
               className="flex h-8 w-8 items-center justify-center rounded-xl text-[#71717A] hover:bg-black/[0.04] hover:text-[#DC2626] transition-colors"
             >
               <LogOut size={15} />
-            </Link>
+            </button>
           </div>
         )}
       </div>

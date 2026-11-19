@@ -95,7 +95,7 @@ export function CreativesCard({ data, campaignId }: { data: DeliverableCreatives
               <button
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
-                className={`w-full rounded-2xl border p-3.5 text-left transition ${isSelected ? "border-[#93c5fd] bg-brand-soft ring-1 ring-[#2563EB]/30" : "border-border bg-surface hover:border-[#d4d9e2] hover:bg-surface-hover"}`}
+                className={`w-full rounded-2xl border p-3.5 text-left transition ${isSelected ? "border-black/[0.15] bg-[#F5F2EF] ring-1 ring-black/10" : "border-border bg-surface hover:border-[#d4d9e2] hover:bg-surface-hover"}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="rounded-md border border-border bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
@@ -125,7 +125,7 @@ export function CreativesCard({ data, campaignId }: { data: DeliverableCreatives
                   </button>
                 ) : (
                   <div className="flex h-full flex-col justify-between bg-white p-7">
-                    <span className="self-start rounded-md bg-brand-soft px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#1D4ED8]">{selectedItem.platform}</span>
+                    <span className="self-start rounded-md bg-[#F5F2EF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#18181B]">{selectedItem.platform}</span>
                     <div className="my-auto space-y-3">
                       <h3 className="font-display text-2xl font-black leading-tight tracking-tight text-ink">{selectedItem.headline}</h3>
                       <p className="text-sm font-medium text-[#475569]">{selectedItem.subtext}</p>
@@ -154,7 +154,7 @@ export function CreativesCard({ data, campaignId }: { data: DeliverableCreatives
                     <a
                       href={selectedItem.imageUrl}
                       download={`creative_${selectedItem.topic.slice(0, 15)}.png`}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#1D4ED8]"
+                      className="flex items-center gap-1.5 rounded-xl bg-[#18181B] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#27272A]"
                     >
                       <Download size={13} />
                       PNG

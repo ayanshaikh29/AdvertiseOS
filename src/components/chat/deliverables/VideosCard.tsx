@@ -44,7 +44,7 @@ export function VideosCard({ data, campaignId }: { data: DeliverableVideos; camp
             <button
               key={i}
               onClick={() => setActivePlan(i)}
-              className={`max-w-[220px] truncate rounded-lg px-3 py-1.5 text-xs font-semibold transition ${i === activePlan ? "bg-brand-soft text-[#1D4ED8]" : "text-muted hover:text-ink"}`}
+              className={`max-w-[220px] truncate rounded-lg px-3 py-1.5 text-xs font-semibold transition ${i === activePlan ? "bg-[#18181B] text-white shadow-2xs font-semibold" : "text-muted hover:text-ink"}`}
             >
               {p.topic}
             </button>
@@ -90,7 +90,7 @@ export function VideosCard({ data, campaignId }: { data: DeliverableVideos; camp
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-md border border-border bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">{s.shotType}</span>
                   <span className="font-mono text-[10px] text-muted">{s.duration_s}s</span>
-                  {s.onScreenText && <span className="rounded-md bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-[#1D4ED8]">“{s.onScreenText}”</span>}
+                  {s.onScreenText && <span className="rounded-md bg-[#F5F2EF] px-2 py-0.5 text-[10px] font-semibold text-[#18181B]">“{s.onScreenText}”</span>}
                 </div>
                 <p className="mt-1.5 text-xs font-medium leading-relaxed text-ink">{s.visual}</p>
                 <p className="mt-1 text-[11px] italic leading-relaxed text-[#475569]">VO: {s.voiceover}</p>

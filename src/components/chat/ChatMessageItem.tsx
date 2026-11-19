@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import type { ChatMessage as ChatMessageType } from "@/types/chat";
 import { AgentCollaborationStatus } from "./AgentCollaborationStatus";
 import { FormattedMarkdown } from "./FormattedMarkdown";
@@ -33,12 +34,12 @@ export function ChatMessageItem({
   if (isUser) {
     return (
       <div className="flex justify-end gap-3 py-2">
-        <div className="max-w-2xl rounded-2xl rounded-tr-md border border-[#bfdbfe] bg-brand-soft px-4 py-3 text-sm leading-relaxed text-[#1e293b]">
+        <div className="max-w-2xl rounded-2xl rounded-tr-xs border border-black/[0.06] bg-white px-4 py-3 text-sm leading-relaxed text-[#18181B] shadow-2xs">
           {message.attachments && message.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
               {message.attachments.map((att, i) => (
-                <span key={i} className="flex items-center gap-1.5 rounded-md border border-border bg-white px-2 py-0.5 text-xs text-[#475569]">
-                  {att.type === "image" ? <ImageIcon size={12} className="text-[#7C3AED]" /> : <FileText size={12} className="text-[#2563EB]" />}
+                <span key={i} className="flex items-center gap-1.5 rounded-lg border border-black/[0.06] bg-[#F5F2EF] px-2 py-0.5 text-xs text-[#52525B]">
+                  {att.type === "image" ? <ImageIcon size={12} className="text-[#8B5CF6]" /> : <FileText size={12} className="text-[#F97316]" />}
                   <span className="max-w-[140px] truncate font-medium">{att.name}</span>
                 </span>
               ))}
@@ -46,7 +47,7 @@ export function ChatMessageItem({
           )}
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-ink font-bold text-white">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#18181B] font-bold text-white shadow-2xs">
           <User size={15} />
         </div>
       </div>
@@ -55,8 +56,14 @@ export function ChatMessageItem({
 
   return (
     <div className="flex gap-3.5 py-2">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white">
-        <Sparkles size={16} />
+      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-black/[0.06] bg-gradient-to-tr from-[#FFF7ED] via-[#FDF2F8] to-[#F5F3FF] p-1 shadow-2xs">
+        <Image
+          src="/logo-emblem-transparent.png"
+          alt="AdvertiseOS Agent"
+          width={22}
+          height={22}
+          className="object-contain"
+        />
       </div>
 
       <div className="min-w-0 flex-1 space-y-3.5 overflow-hidden">
@@ -72,7 +79,7 @@ export function ChatMessageItem({
           <div className="rounded-2xl border border-border bg-surface px-4 py-3.5 text-sm leading-relaxed text-[#0b1220] shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
             <FormattedMarkdown content={message.content} />
             {isStreaming && (
-              <span className="ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-[#2563EB]" aria-label="Streaming" />
+              <span className="ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-[#18181B]" aria-label="Streaming" />
             )}
           </div>
         )}

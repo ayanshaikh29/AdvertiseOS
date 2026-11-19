@@ -82,8 +82,8 @@ export function ClarificationsCard({ data }: { data: DeliverableClarifications }
       )}
 
       {data.canProceedWithDraft && (
-        <div className="mx-5 mb-5 flex items-start gap-2.5 rounded-xl border border-[#bfdbfe] bg-brand-soft px-3.5 py-2.5 text-xs text-[#1E40AF]">
-          <ArrowRight size={14} className="mt-0.5 shrink-0 text-[#2563EB]" />
+        <div className="mx-5 mb-5 flex items-start gap-2.5 rounded-xl border border-black/[0.08] bg-[#F5F2EF] px-3.5 py-2.5 text-xs text-[#18181B]">
+          <ArrowRight size={14} className="mt-0.5 shrink-0 text-[#8B5CF6]" />
           <p className="leading-relaxed">{data.proceedNote}</p>
         </div>
       )}

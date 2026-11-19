@@ -76,8 +76,8 @@ export function TeamPanel({ activities, onClose }: { activities: AgentActivity[]
             <span className="relative flex h-2 w-2 shrink-0">
               {running > 0 ? (
                 <>
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2563EB] opacity-60" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2563EB]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8B5CF6] opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8B5CF6]" />
                 </>
               ) : (
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#10B981]" />
@@ -123,7 +123,7 @@ export function TeamPanel({ activities, onClose }: { activities: AgentActivity[]
                 isDone
                   ? "border-[#A7F3D0] bg-[#FAFFFD]"
                   : isWorking
-                    ? "border-[#BFDBFE] bg-brand-soft/50 ring-1 ring-[#2563EB]/20"
+                    ? "border-[#C4B5FD]/50 bg-[#FAF5FF] ring-1 ring-[#8B5CF6]/20"
                     : isReview
                       ? "border-[#FDE68A] bg-[#FFFDF5]"
                       : isError
@@ -150,7 +150,7 @@ export function TeamPanel({ activities, onClose }: { activities: AgentActivity[]
                 {isDone ? (
                   <CheckCircle2 size={15} className="shrink-0 text-[#10B981]" />
                 ) : isWorking ? (
-                  <Loader2 size={15} className="shrink-0 animate-spin text-[#2563EB]" />
+                  <Loader2 size={15} className="shrink-0 animate-spin text-[#8B5CF6]" />
                 ) : isReview ? (
                   <ShieldCheck size={15} className="shrink-0 text-[#D97706]" />
                 ) : isError ? (
@@ -174,7 +174,7 @@ export function TeamPanel({ activities, onClose }: { activities: AgentActivity[]
                       isDone
                         ? "bg-[#DCFCE7] text-[#15803D]"
                         : isWorking
-                          ? "bg-brand-soft text-[#1D4ED8]"
+                          ? "bg-[#F3E8FF] text-[#6B21A8]"
                           : isReview
                             ? "bg-[#FEF3C7] text-[#B45309]"
                             : isError

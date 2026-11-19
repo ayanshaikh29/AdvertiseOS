@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-const base = "w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-base sm:text-sm text-ink placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none transition-colors";
+const base = "w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-base sm:text-sm text-ink placeholder:text-[#94A3B8] focus:border-[#18181B] focus:ring-1 focus:ring-[#18181B] focus:outline-none transition-colors";
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(base, "min-h-[44px]", props.className)} />;

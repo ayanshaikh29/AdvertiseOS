@@ -85,7 +85,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${tab === t.id ? "bg-brand-soft text-[#1D4ED8]" : "text-muted hover:text-ink"}`}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${tab === t.id ? "bg-[#18181B] text-white shadow-2xs font-semibold" : "text-muted hover:text-ink"}`}
           >
             {t.label}
           </button>
@@ -96,7 +96,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
         {tab === "framework" && (
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-border bg-[#fafbfc] p-4">
-              <div className="flex items-center gap-2 text-[#2563EB]">
+              <div className="flex items-center gap-2 text-[#8B5CF6]">
                 <Target size={15} />
                 <h4 className="text-xs font-bold uppercase tracking-wider">Objectives</h4>
                 <ClaimBadge type="recommendation" />
@@ -104,13 +104,13 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
               <ul className="mt-3 space-y-2 text-xs text-[#334155]">
                 {data.objectives.map((obj, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[10px] font-bold text-[#1D4ED8]">{i + 1}</span>
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#18181B] text-[10px] font-bold text-white">{i + 1}</span>
                     <span className="leading-relaxed">{obj}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-5 flex items-center gap-2 text-[#2563EB]">
+              <div className="mt-5 flex items-center gap-2 text-[#8B5CF6]">
                 <BarChart2 size={15} />
                 <h4 className="text-xs font-bold uppercase tracking-wider">KPIs</h4>
                 <ClaimBadge type="recommendation" />
@@ -123,7 +123,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
             </div>
 
             <div className="rounded-xl border border-border bg-[#fafbfc] p-4">
-              <div className="flex items-center gap-2 text-[#2563EB]">
+              <div className="flex items-center gap-2 text-[#8B5CF6]">
                 <Layers size={15} />
                 <h4 className="text-xs font-bold uppercase tracking-wider">Content pillars</h4>
               </div>
@@ -133,7 +133,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
                 ))}
               </div>
 
-              <div className="mt-5 flex items-center gap-2 text-[#2563EB]">
+              <div className="mt-5 flex items-center gap-2 text-[#8B5CF6]">
                 <StickyNote size={15} />
                 <h4 className="text-xs font-bold uppercase tracking-wider">Audience insights</h4>
                 <ClaimBadge type="fact" />
@@ -141,7 +141,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
               <ul className="mt-2.5 space-y-2 text-xs text-[#334155]">
                 {data.audienceInsights.map((ins, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="font-bold text-[#2563EB]">→</span>
+                    <span className="font-bold text-[#8B5CF6]">→</span>
                     <span className="leading-relaxed">{ins}</span>
                   </li>
                 ))}
@@ -151,7 +151,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
             {/* Funnel */}
             {data.funnelStages && data.funnelStages.length > 0 && (
               <div className="rounded-xl border border-border bg-[#fafbfc] p-4 md:col-span-2">
-                <div className="flex items-center gap-2 text-[#2563EB]">
+                <div className="flex items-center gap-2 text-[#8B5CF6]">
                   <Filter size={15} />
                   <h4 className="text-xs font-bold uppercase tracking-wider">Funnel stages</h4>
                   <ClaimBadge type="recommendation" />
@@ -160,7 +160,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
                   {data.funnelStages.map((f, i) => (
                     <div key={i} className="rounded-xl border border-border bg-white p-3">
                       <p className="text-xs font-bold text-ink">{f.stage}</p>
-                      <p className="mt-1 text-[11px] font-medium text-[#2563EB]">{f.goal}</p>
+                      <p className="mt-1 text-[11px] font-medium text-[#8B5CF6]">{f.goal}</p>
                       <p className="mt-1 text-[11px] leading-relaxed text-muted">{f.content}</p>
                     </div>
                   ))}
@@ -188,7 +188,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
                         <td className="border-b border-border-subtle px-4 py-3 font-semibold text-ink">{s.name}</td>
                         <td className="border-b border-border-subtle px-4 py-3 text-[#475569]">{s.insight}</td>
                         <td className="border-b border-border-subtle px-4 py-3">
-                          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-[#1D4ED8]">{s.channel}</span>
+                          <span className="rounded-full bg-[#F5F2EF] px-2 py-0.5 text-[10px] font-semibold text-[#18181B]">{s.channel}</span>
                         </td>
                       </tr>
                     ))}
@@ -209,7 +209,7 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
             <div className="grid gap-3 sm:grid-cols-3">
               {data.recommendedChannels?.map((ch, idx) => (
                 <div key={idx} className="rounded-xl border border-border bg-[#fafbfc] p-3.5">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#2563EB]">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8B5CF6]">
                     <Radio size={14} /> {ch.channel}
                   </div>
                   <p className="mt-1.5 text-xs leading-relaxed text-[#475569]">{ch.rationale}</p>
@@ -248,8 +248,8 @@ export function StrategyCard({ data }: { data: DeliverableStrategy }) {
 
         {/* Positioning */}
         {data.positioning && (
-          <div className="mt-4 rounded-xl border border-[#bfdbfe] bg-brand-soft px-4 py-3 text-xs text-[#1e3a8a]">
-            <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#1D4ED8]">Positioning & core message</span>
+          <div className="mt-4 rounded-xl border border-black/[0.08] bg-[#F5F2EF] px-4 py-3 text-xs text-[#18181B]">
+            <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#18181B]">Positioning & core message</span>
             {data.positioning}
           </div>
         )}

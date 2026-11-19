@@ -153,13 +153,13 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-[#2563EB]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5F2EF] text-[#18181B]">
             <FileText size={20} />
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-display truncate text-sm font-bold text-ink">Post copy & multi-variant captions</h3>
-              <span className="shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-semibold text-[#1D4ED8]">
+              <span className="shrink-0 rounded-full bg-[#F5F2EF] px-2 py-0.5 text-[10px] font-semibold text-[#18181B]">
                 {items.length} posts
               </span>
             </div>
@@ -228,7 +228,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                       </span>
                     ) : null}
                     {post.reviewedBy && (
-                      <span className="rounded-md border border-[#bfdbfe] bg-[#eff6ff] px-2 py-0.5 text-[10px] font-semibold text-[#1d4ed8]">
+                      <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
                         Reviewed by {post.reviewedBy}{post.manager_score ? ` (${post.manager_score}/100)` : ""} → Signed off by CEO
                       </span>
                     )}
@@ -336,9 +336,9 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                 {(post.hook || post.objective || post.audience) && (
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {post.hook && (
-                      <div className="rounded-lg bg-brand-soft px-3 py-2">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-[#1D4ED8]">Hook</p>
-                        <p className="text-xs font-semibold text-[#1e3a8a]">{post.hook}</p>
+                      <div className="rounded-lg bg-[#FAF5FF] border border-[#C4B5FD]/40 px-3 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-[#7C3AED]">Hook</p>
+                        <p className="text-xs font-semibold text-[#581C87]">{post.hook}</p>
                       </div>
                     )}
                     {post.objective && (
@@ -364,7 +364,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                       <button
                         key={i}
                         onClick={() => setVariantMap((m) => ({ ...m, [post.id]: i }))}
-                        className={`rounded-md px-2 py-0.5 text-[11px] font-medium transition ${vIndex === i ? "bg-[#2563EB] font-bold text-white" : "bg-surface-2 text-muted hover:text-ink"}`}
+                        className={`rounded-md px-2 py-0.5 text-[11px] font-medium transition ${vIndex === i ? "bg-[#18181B] font-bold text-white shadow-2xs" : "bg-surface-2 text-muted hover:text-ink"}`}
                       >
                         {i + 1}
                       </button>
@@ -380,14 +380,14 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         rows={6}
-                        className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-relaxed text-ink focus:border-[#2563EB] focus:outline-none"
+                        className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-relaxed text-ink focus:border-[#18181B] focus:outline-none"
                         aria-label="Edit caption"
                       />
                       <div className="mt-2 flex gap-2">
                         <button
                           onClick={() => saveEdit(post, vIndex)}
                           disabled={isBusy}
-                          className="rounded-lg bg-[#2563EB] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
+                          className="rounded-lg bg-[#18181B] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#27272A] disabled:opacity-50"
                         >
                           {busy[post.id] === "save" ? "Saving…" : "Save changes"}
                         </button>
@@ -400,7 +400,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                     <>
                       <p className={`whitespace-pre-wrap text-xs leading-relaxed text-[#334155] ${!isExpanded && currentCaption.length > 320 ? "line-clamp-5" : ""}`}>{currentCaption}</p>
                       {currentCaption.length > 320 && (
-                        <button onClick={() => setExpanded((m) => ({ ...m, [post.id]: !isExpanded }))} className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#2563EB]">
+                        <button onClick={() => setExpanded((m) => ({ ...m, [post.id]: !isExpanded }))} className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#18181B] hover:underline">
                           {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                           {isExpanded ? "Show less" : "Show full caption"}
                         </button>
@@ -408,7 +408,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                       {post.hashtags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border-subtle pt-2">
                           {post.hashtags.map((h, i) => (
-                            <span key={i} className="text-[11px] font-medium text-[#2563EB]">{h}</span>
+                            <span key={i} className="text-[11px] font-medium text-[#7C3AED]">{h}</span>
                           ))}
                         </div>
                       )}
@@ -423,7 +423,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                     <ol className="mt-1.5 space-y-1.5">
                       {post.carousel_slides.map((s, i) => (
                         <li key={i} className="rounded-lg border border-border-subtle bg-white px-3 py-2">
-                          <span className="mr-2 text-[10px] font-bold text-[#2563EB]">{i + 1}</span>
+                          <span className="mr-2 text-[10px] font-bold text-[#18181B]">{i + 1}</span>
                           <span className="text-xs font-semibold text-ink">{s.heading}</span>
                           <p className="mt-0.5 pl-6 text-[11px] leading-relaxed text-[#475569]">{s.body}</p>
                         </li>
@@ -451,7 +451,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                     </div>
                     <div className="rounded-lg border border-border-subtle bg-white p-2.5">
                       <p className="text-[9px] font-bold uppercase tracking-wider text-[#94A3B8]">CTA</p>
-                      <p className="mt-0.5 text-xs font-semibold text-[#2563EB]">{post.ad_copy.cta}</p>
+                      <p className="mt-0.5 text-xs font-semibold text-[#18181B]">{post.ad_copy.cta}</p>
                     </div>
                   </div>
                 )}
@@ -459,7 +459,7 @@ export function ContentPostsCard({ data, campaignId }: { data: DeliverableConten
                 {/* CTA + design brief line */}
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border-subtle bg-surface-2 px-3.5 py-2 text-xs">
                   <div className="min-w-0">
-                    <span className="mr-1.5 font-semibold text-[#2563EB]">CTA:</span>
+                    <span className="mr-1.5 font-semibold text-[#18181B]">CTA:</span>
                     <span className="text-[#334155]">{post.cta}</span>
                   </div>
                   {post.design && (

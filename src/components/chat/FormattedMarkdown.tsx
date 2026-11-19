@@ -178,7 +178,7 @@ function Block({ block }: { block: MdBlock }) {
         <ul className="space-y-1.5 pl-1">
           {block.items.map((item, i) => (
             <li key={i} className="flex items-start gap-2.5">
-              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#2563EB] shrink-0" />
+              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#18181B] shrink-0" />
               <span className="text-[#334155] leading-normal">{parseInline(item)}</span>
             </li>
           ))}
@@ -189,7 +189,7 @@ function Block({ block }: { block: MdBlock }) {
         <ol className="space-y-1.5 pl-1">
           {block.items.map((item, i) => (
             <li key={i} className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#dbeafe] text-[10px] font-bold text-[#2563EB]">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#18181B] text-[10px] font-bold text-white">
                 {i + 1}
               </span>
               <span className="text-[#334155] leading-normal">{parseInline(item)}</span>
@@ -199,7 +199,7 @@ function Block({ block }: { block: MdBlock }) {
       );
     case "quote":
       return (
-        <blockquote className="rounded-r-xl border-l-2 border-[#2563EB]/60 bg-[#eff6ff] px-3.5 py-2.5 text-[#334155]">
+        <blockquote className="rounded-r-xl border-l-2 border-[#18181B]/40 bg-[#F5F2EF] px-3.5 py-2.5 text-[#334155]">
           {block.lines.map((l, i) => (
             <p key={i} className="leading-relaxed">{parseInline(l)}</p>
           ))}
@@ -253,7 +253,7 @@ function parseInline(text: string): React.ReactNode {
 
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
-        <code key={i} className="rounded bg-[#f1f5f9] px-1.5 py-0.5 font-mono text-[12px] text-[#2563EB] border border-[#e2e8f0]">
+        <code key={i} className="rounded bg-[#F5F2EF] px-1.5 py-0.5 font-mono text-[12px] text-[#18181B] border border-black/[0.06]">
           {part.slice(1, -1)}
         </code>
       );
@@ -268,7 +268,7 @@ function parseInline(text: string): React.ReactNode {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#2563EB] underline underline-offset-2 hover:text-[#1d4ed8] transition"
+          className="text-[#8B5CF6] underline underline-offset-2 hover:text-[#7C3AED] transition"
         >
           {label}
         </a>

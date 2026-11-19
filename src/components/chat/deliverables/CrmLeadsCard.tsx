@@ -19,7 +19,7 @@ export function CrmLeadsCard({ data }: { data: DeliverableCrmLeads }) {
       case "instagram_dm":
         return <MessageSquare size={13} className="text-[#DB2777]" />;
       case "call":
-        return <PhoneCall size={13} className="text-[#2563EB]" />;
+        return <PhoneCall size={13} className="text-[#0891B2]" />;
       default:
         return <Mail size={13} className="text-[#7C3AED]" />;
     }
@@ -57,7 +57,7 @@ export function CrmLeadsCard({ data }: { data: DeliverableCrmLeads }) {
               <div key={i} className="rounded-xl border border-border bg-[#fafbfc] p-3 text-center">
                 <span className="text-[10px] font-bold uppercase text-muted">{st.name}</span>
                 <p className="mt-1 text-xl font-extrabold text-ink">{st.count}</p>
-                {st.valueUsd ? <span className="text-[10px] font-medium text-[#2563EB]">${st.valueUsd.toLocaleString()} value</span> : null}
+                {st.valueUsd ? <span className="text-[10px] font-medium text-[#059669]">${st.valueUsd.toLocaleString()} value</span> : null}
               </div>
             ))}
           </div>

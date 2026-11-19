@@ -27,8 +27,8 @@ export function AgentCollaborationStatus({ activities, isOpen, onToggle }: Agent
           <span className="relative flex h-2 w-2">
             {runningCount > 0 ? (
               <>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2563EB] opacity-70" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2563EB]" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8B5CF6] opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8B5CF6]" />
               </>
             ) : isClarificationOnly ? (
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#F59E0B]" />
@@ -42,7 +42,7 @@ export function AgentCollaborationStatus({ activities, isOpen, onToggle }: Agent
               Awaiting Details · Clarification Mode
             </span>
           ) : (
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${runningCount > 0 ? "tint-info" : "tint-success"}`}>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${runningCount > 0 ? "border border-[#c4b5fd]/40 bg-[#f5f3ff] text-[#6d28d9]" : "tint-success"}`}>
               {runningCount > 0 ? `${runningCount} working` : `${completedCount}/${totalCount} specialists verified`}
             </span>
           )}
@@ -67,7 +67,7 @@ export function AgentCollaborationStatus({ activities, isOpen, onToggle }: Agent
                   isDone
                     ? "border-[#a7f3d0] bg-[#ecfdf5]"
                     : isRunning
-                      ? "border-[#bfdbfe] bg-brand-soft"
+                      ? "border-[#c4b5fd]/50 bg-[#faf5ff]"
                       : isError
                         ? "border-[#fecaca] bg-[#fef2f2]"
                         : "border-border bg-surface"
@@ -77,7 +77,7 @@ export function AgentCollaborationStatus({ activities, isOpen, onToggle }: Agent
                   {isDone ? (
                     <CheckCircle2 size={14} className="text-[#10B981]" />
                   ) : isRunning ? (
-                    <Loader2 size={14} className="animate-spin text-[#2563EB]" />
+                    <Loader2 size={14} className="animate-spin text-[#8B5CF6]" />
                   ) : isError ? (
                     <AlertCircle size={14} className="text-[#EF4444]" />
                   ) : (
@@ -106,7 +106,7 @@ export function AgentCollaborationStatus({ activities, isOpen, onToggle }: Agent
                     {act.currentTask || (isDone ? "Deliverable verified & passed" : "Active")}
                   </p>
                   {act.outputRef && (
-                    <p className="mt-0.5 truncate text-[10px] font-medium text-[#2563EB]">
+                    <p className="mt-0.5 truncate text-[10px] font-medium text-[#7C3AED]">
                       ↳ {act.outputRef}
                     </p>
                   )}

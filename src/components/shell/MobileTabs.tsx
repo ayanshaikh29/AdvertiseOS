@@ -49,7 +49,7 @@ export function MobileTabs() {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex min-h-[56px] flex-col items-center justify-center gap-1 text-[11px] font-semibold transition active:scale-95",
-                    active ? "text-[#2563EB]" : "text-[#64748B]"
+                    active ? "text-[#18181B] font-bold" : "text-[#71717A]"
                   )}
                 >
                   {t.icon} {t.label}
